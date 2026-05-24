@@ -242,6 +242,8 @@ button,input,select,textarea{font-family:inherit}
         <div class="fchip" data-f="g:horror" onclick="wf(this,'g:horror')">Horror</div>
         <div class="fchip" data-f="g:action" onclick="wf(this,'g:action')">Action</div>
         <div class="fchip" data-f="g:documentary" onclick="wf(this,'g:documentary')">Doco</div>
+        <div class="fchip" data-f="s:watching" onclick="wf(this,'s:watching')">Watching</div>
+        <div class="fchip" data-f="s:watched" onclick="wf(this,'s:watched')">Watched</div>
       </div>
       <div id="watch-list"></div>
     </div>
@@ -334,11 +336,11 @@ function editGrocery(id){const it=live.grocery[id];openSheet('Edit item',`<input
 
 function addWatch(){const t=document.getElementById('wi').value.trim();if(!t)return;dbNew('watch',{title:t,type:document.getElementById('w-type').value,genre:document.getElementById('w-genre').value,platform:document.getElementById('w-plat').value||'',status:'towatch',by:me,at:Date.now()});document.getElementById('wi').value='';document.getElementById('w-plat').value='';}
 function wf(chip,f){if(f==='all'){wFilters.clear();wFilters.add('all');document.querySelectorAll('#wfilters .fchip').forEach(c=>c.classList.remove('on'));chip.classList.add('on');}else{wFilters.delete('all');document.querySelector('[data-f="all"]').classList.remove('on');if(wFilters.has(f)){wFilters.delete(f);chip.classList.remove('on');if(!wFilters.size){wFilters.add('all');document.querySelector('[data-f="all"]').classList.add('on');}}else{wFilters.add(f);chip.classList.add('on');}}rWatch();}
-function wMatch(it){if(wFilters.has('all'))return true;const tf=[...wFilters].filter(x=>x.startsWith('t:')),gf=[...wFilters].filter(x=>x.startsWith('g:'));if(tf.length&&!tf.some(x=>x==='t:'+it.type))return false;if(gf.length&&!gf.some(x=>x==='g:'+it.genre))return false;return true;}
+function wMatch(it){if(wFilters.has('all'))return true;const tf=[...wFilters].filter(x=>x.startsWith('t:')),gf=[...wFilters].filter(x=>x.startsWith('g:')),sf=[...wFilters].filter(x=>x.startsWith('s:'));if(tf.length&&!tf.some(x=>x==='t:'+it.type))return false;if(gf.length&&!gf.some(x=>x==='g:'+it.genre))return false;if(sf.length&&!sf.some(x=>x==='s:'+(it.status||'towatch')))return false;return true;}
 function rWatch(){
   const items=Object.entries(live.watch||{}).filter(([,it])=>wMatch(it)),el=document.getElementById('watch-list');
   if(!items.length){el.innerHTML='<div class="empty"><div class="empty-icon">🎬</div><div class="empty-text">Nothing to watch yet</div></div>';return;}
-  const ord=['towatch','watching','watched'];
+  const ord=['watching','towatch','watched'];
   items.sort((a,b)=>{const sa=ord.indexOf(a[1].status||'towatch'),sb=ord.indexOf(b[1].status||'towatch');return sa!==sb?sa-sb:(b[1].at||0)-(a[1].at||0);});
   el.innerHTML=items.map(([id,it])=>{const st=it.status||'towatch';const adv=st==='towatch'?'→ Watching':st==='watching'?'→ Watched':'';const bck=st==='towatch'?'Delete ←':st==='watching'?'To watch ←':'Watching ←';
     return `<div class="sw-wrap"><div class="sw-bg r">${adv}</div><div class="sw-bg l">${bck}</div><div class="sw-content item" id="swc-${id}"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div><div class="item-body"><div class="item-name">${esc(it.title)}</div><div class="item-sub"><span class="pill p-tag">${it.type==='tv'?'TV':'Movie'}</span><span class="pill p-tag">${GLBL[it.genre]||it.genre}</span>${it.platform?`<span class="pill p-tag">${esc(it.platform)}</span>`:''}<span class="pill p-${st}">${WLBL[st]}</span></div></div><div class="act-row"><button class="act-b ew" onclick="editWatch('${id}')">✎</button><button class="act-b del" onclick="rm('watch','${id}')">✕</button></div></div></div>`;
