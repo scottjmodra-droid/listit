@@ -2,1448 +2,382 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#1a0633">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>List it</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="TRACKR">
-<title>TRACKR</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232a0d52'/%3E%3Cpath d='M14 30h6v4h-6zm30 0h6v4h-6zm-26-6h4v16h-4zm32 0h4v16h-4zm-26 6h20v4H24z' fill='%23e8f84a'/%3E%3C/svg%3E">
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%232a0d52'/%3E%3Cpath d='M40 84h17v12H40zm83 0h17v12h-17zM57 67h11v46H57zm55 0h11v46h-11zM68 84h44v12H68z' fill='%23e8f84a'/%3E%3C/svg%3E">
+<meta name="apple-mobile-web-app-title" content="List it">
+<meta name="version" content="1.1">
+<meta name="theme-color" content="#2433B0">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap');
-
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body {
-  background: #1a0633;
-  color: #f0e6ff;
-  font-family: 'DM Sans', sans-serif;
-  min-height: 100vh;
-  min-height: 100dvh;
-  -webkit-font-smoothing: antialiased;
-  overscroll-behavior-y: none;
-}
-body {
-  background:
-    radial-gradient(ellipse at top, #4a1480 0%, transparent 55%),
-    radial-gradient(ellipse at bottom right, #6b1b9a 0%, transparent 50%),
-    linear-gradient(180deg, #1a0633 0%, #2a0d52 100%);
-  background-attachment: fixed;
-}
-input, button, select { font-family: inherit; outline: none; }
-button { -webkit-appearance: none; appearance: none; cursor: pointer; }
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-input[type="number"] { -moz-appearance: textfield; }
-input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.6); }
-
-.app {
-  max-width: 480px;
-  margin: 0 auto;
-  min-height: 100vh;
-  min-height: 100dvh;
-  padding-bottom: calc(20px + env(safe-area-inset-bottom));
-}
-
-.header {
-  padding: calc(20px + env(safe-area-inset-top)) 20px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-.title {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 36px;
-  letter-spacing: 2px;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.title-meta { font-size: 14px; color: #d4baeb; margin-bottom: 16px; font-family: 'DM Sans', sans-serif; letter-spacing: 0; font-weight: 400; }
-.menu-btn {
-  background: transparent; border: none; color: #c8a8e8; font-size: 22px;
-  padding: 4px 8px; line-height: 1; border-radius: 6px;
-}
-.menu-btn:active { background: rgba(255,255,255,0.1); }
-
-.tabs { display: flex; gap: 0; }
-.tab {
-  flex: 1; padding: 14px 0; border: none; font-size: 14px;
-  font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px;
-  background: transparent; color: #d4baeb;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s;
-}
-.tab.active { background: rgba(255,255,255,0.08); color: #fff; border-bottom-color: #e8f84a; }
-
-.section { padding: 20px; }
-
-.discipline-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 20px;
-}
-.discipline-btn {
-  padding: 12px 4px; border: 2px solid transparent; border-radius: 10px;
-  transition: all 0.15s; min-height: 76px;
-  color: #1a0633;
-  /* background, border-color, and color set inline using discipline colour */
-}
-.discipline-btn.active {
-  box-shadow: 0 6px 20px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.15) inset;
-  transform: translateY(-1px);
-}
-.discipline-btn .icon { font-size: 26px; line-height: 1; }
-.discipline-btn .label {
-  font-size: 14px; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1.5px;
-  color: inherit; margin-top: 4px;
-}
-.discipline-btn .count {
-  font-size: 13px; color: inherit; opacity: 0.8; margin-top: 2px;
-  font-family: 'Bebas Neue', sans-serif;
-}
-
-.field { margin-bottom: 14px; }
-.date-row {
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) 44px;
-  gap: 8px; align-items: stretch;
-  width: 100%;
-}
-.date-nav {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 8px;
-  color: #d4baeb; font-size: 22px; line-height: 1;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
-  padding: 0;
-}
-.date-nav:active { background: rgba(255,255,255,0.12); color: #fff; }
-.date-input-wrap { position: relative; min-width: 0; overflow: hidden; }
-.date-input-wrap .input {
-  width: 100%; min-width: 0; padding-right: 70px;
-  -webkit-appearance: none; appearance: none;
-  display: block; box-sizing: border-box;
-  min-height: 50px;
-}
-/* iOS sometimes lays out the inner text container of <input type=date>
-   beyond the input's box. Belt-and-braces: clip + force inner box too. */
-.date-input-wrap .input::-webkit-date-and-time-value {
-  text-align: left; width: 100%; min-width: 0; display: block;
-}
-.date-input-wrap.is-today .input {
-  border-color: #e8f84a;
-  box-shadow: 0 0 0 1px rgba(232, 248, 74, 0.3);
-}
-.date-today-badge {
-  position: absolute; top: 50%; right: 10px; transform: translateY(-50%);
-  background: #e8f84a; color: #1a0633;
-  font-family: 'Bebas Neue', sans-serif; letter-spacing: 1.5px;
-  font-size: 11px; padding: 3px 8px; border-radius: 4px;
-  pointer-events: none;
-}
-.field-label {
-  font-size: 13px; color: #d4baeb; letter-spacing: 2px;
-  font-family: 'Bebas Neue', sans-serif; margin-bottom: 7px; display: block;
-}
-.input {
-  width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px;
-  color: #fff; padding: 14px; font-size: 16px;
-  backdrop-filter: blur(8px);
-}
-.input:focus { border-color: #e8f84a; }
-
-.rpe-preview {
-  margin-top: 12px; padding: 10px 14px; border-radius: 8px;
-  border-left-width: 3px; border-left-style: solid;
-}
-.rpe-preview-label { font-size: 12px; }
-.rpe-preview-bar { display: flex; gap: 3px; margin-top: 6px; }
-.rpe-preview-bar > div { flex: 1; height: 4px; border-radius: 2px; background: #222; }
-
-.computed-hint {
-  font-size: 13px; color: #e8c8ff; margin-top: 6px; font-style: italic;
-  cursor: pointer;
-}
-.computed-hint:active { color: #fff; }
-
-.save-btn {
-  width: 100%; margin-top: 24px; padding: 18px; border: none;
-  border-radius: 12px; font-size: 17px; font-family: 'Bebas Neue', sans-serif;
-  letter-spacing: 2.5px; color: #000; transition: all 0.3s;
-}
-.save-btn.saved { background: #1a2a0a !important; color: #a3e635 !important; border: 1px solid #a3e635; }
-
-.today-section { margin-top: 28px; }
-.today-label {
-  font-size: 13px; color: #d4baeb; letter-spacing: 2px;
-  font-family: 'Bebas Neue', sans-serif; margin-bottom: 10px;
-}
-.today-item {
-  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
-  background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 6px;
-  border-left: 3px solid;
-  backdrop-filter: blur(8px);
-}
-.today-item .icon { font-size: 22px; }
-.today-item .name { font-size: 16px; color: #f0e6ff; font-weight: 500; }
-.today-item .meta { font-size: 13px; color: #c8a8e8; margin-top: 3px; }
-
-.weekly-chart-label {
-  font-family: 'Bebas Neue', sans-serif; letter-spacing: 3px;
-  font-size: 13px; color: #d4baeb; margin-bottom: 14px;
-}
-.range-toggle {
-  display: flex; gap: 4px; padding: 4px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 10px; margin-bottom: 16px;
-  border: 1px solid rgba(255,255,255,0.08);
-}
-.range-btn {
-  flex: 1; padding: 9px 4px; border: none; border-radius: 7px;
-  background: transparent; color: #d4baeb;
-  font-family: 'Bebas Neue', sans-serif; letter-spacing: 1.5px;
-  font-size: 12px; transition: all 0.15s;
-}
-.range-btn.active {
-  background: rgba(232, 248, 74, 0.15);
-  color: #e8f84a;
-  box-shadow: 0 0 0 1px rgba(232, 248, 74, 0.4);
-}
-
-.chart-header {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 10px; margin-bottom: 14px;
-}
-.chart-header .weekly-chart-label { margin-bottom: 0; }
-.metric-toggle {
-  display: inline-flex; gap: 2px; padding: 3px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.10);
-  border-radius: 8px;
-  flex-shrink: 0;
-}
-.metric-btn {
-  padding: 5px 10px; border: none; border-radius: 5px;
-  background: transparent; color: #9684b8;
-  font-family: 'Bebas Neue', sans-serif; letter-spacing: 1.5px;
-  font-size: 11px; transition: all 0.15s;
-}
-.metric-btn.active {
-  background: rgba(232, 248, 74, 0.18);
-  color: #e8f84a;
-}
-
-.daily-avg-line {
-  position: absolute; left: 0; right: 0; height: 0;
-  border-top: 1.5px dashed rgba(232, 248, 74, 0.7);
-  pointer-events: none;
-  z-index: 2;
-}
-.daily-avg-label {
-  position: absolute; right: 0; top: -16px;
-  font-size: 10px; color: #e8f84a;
-  background: rgba(26, 6, 51, 0.9);
-  padding: 1px 6px; border-radius: 3px;
-  font-family: 'DM Sans', sans-serif;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-}
-
-.daily-chart {
-  position: relative;
-  padding-left: 38px;
-  padding-bottom: 22px;
-}
-.daily-y-axis {
-  position: absolute; left: 0; top: 0; width: 34px; height: 160px;
-  font-size: 10px; color: #9684b8; font-family: 'DM Sans', sans-serif;
-}
-.daily-y-axis span {
-  position: absolute; right: 6px; line-height: 1;
-  transform: translateY(-50%);
-}
-.daily-y-axis span.y-zero { transform: none; bottom: 0; }
-.daily-grid {
-  position: absolute; left: 38px; right: 0; top: 0; height: 160px;
-  pointer-events: none;
-}
-.daily-grid > div {
-  position: absolute; left: 0; right: 0; height: 0;
-  border-top: 1px dashed rgba(255,255,255,0.08);
-}
-.daily-grid > div.zero { border-top: 1px solid rgba(255,255,255,0.18); }
-.daily-bars {
-  display: flex; gap: 4px; align-items: flex-end; height: 160px;
-  position: relative;
-}
-.daily-bar-col {
-  flex: 1; display: flex; flex-direction: column; align-items: center;
-  height: 100%; justify-content: flex-end; position: relative;
-  min-width: 0;
-}
-.daily-bar-stack {
-  width: 100%; display: flex; flex-direction: column-reverse;
-  border-radius: 3px 3px 0 0; overflow: hidden; min-height: 0;
-}
-.daily-bar-seg { width: 100%; min-height: 2px; }
-.daily-bar-label {
-  position: absolute; bottom: -20px; left: 0; right: 0;
-  font-size: 10px; color: #9684b8; text-align: center; line-height: 1.2;
-}
-.daily-bar-label .dow { display: block; font-weight: 500; font-size: 10px; }
-.daily-bar-label .dom { display: block; color: #7a6394; font-size: 9px; }
-.daily-bar-label.weekend .dow { color: #c8a8e8; }
-.daily-bar-label.today .dow { color: #e8f84a; font-weight: 700; }
-.daily-bar-label.today .dom { color: #e8f84a; }
-.daily-chart.dense .daily-bar-label .dow { font-size: 8px; }
-.daily-chart.dense .daily-bar-label .dom { font-size: 8px; }
-.weekly-legend { display: flex; gap: 14px; margin-top: 20px; flex-wrap: wrap; }
-.weekly-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #d4baeb; }
-.weekly-legend-swatch { width: 8px; height: 8px; border-radius: 2px; }
-
-.stats-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  gap: 8px; margin-bottom: 16px;
-}
-.stat-card {
-  background: rgba(255,255,255,0.06); border-radius: 10px; padding: 12px 14px;
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,0.08);
-}
-.stat-value { font-size: 28px; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
-.stat-label { font-size: 12px; color: #d4baeb; margin-top: 2px; }
-
-.history-list { display: flex; flex-direction: column; gap: 8px; }
-.history-item {
-  background: rgba(255,255,255,0.06); border-radius: 8px; padding: 12px 14px;
-  border-left: 3px solid;
-  position: relative;
-  backdrop-filter: blur(8px);
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.history-item:active { background: rgba(255,255,255,0.10); }
-.history-item.editing { background: rgba(255,255,255,0.10); cursor: default; }
-.history-item.editing:active { background: rgba(255,255,255,0.10); }
-.history-edit { display: flex; flex-direction: column; gap: 10px; padding-top: 8px; }
-.history-edit-field { display: flex; flex-direction: column; gap: 4px; }
-.history-edit-field-label {
-  font-size: 11px; color: #d4baeb; letter-spacing: 1.5px;
-  font-family: 'Bebas Neue', sans-serif;
-}
-.history-edit-field .input { padding: 10px 12px; font-size: 15px; }
-.history-edit-actions { display: flex; gap: 8px; margin-top: 6px; }
-.history-edit-actions button {
-  flex: 1; padding: 12px; border-radius: 6px;
-  font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px;
-  font-size: 13px; border: none;
-}
-.history-edit-cancel { background: rgba(255,255,255,0.06); color: #d4baeb; border: 1px solid rgba(255,255,255,0.10); }
-.history-edit-save { background: #e8f84a; color: #1a0633; font-weight: 600; }
-.history-item-top {
-  display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
-}
-.history-date { font-size: 14px; color: #d4baeb; font-weight: 500; }
-.history-data { display: flex; gap: 14px; flex-wrap: wrap; }
-.history-field { font-size: 16px; color: #fff; }
-.history-field-label { color: #b090d0; font-size: 12px; margin-right: 3px; }
-.history-delete {
-  position: absolute; top: 8px; right: 8px;
-  background: transparent; border: none; color: #9684b8;
-  font-size: 20px; padding: 4px 10px; border-radius: 6px;
-  line-height: 1;
-}
-.history-delete:active { color: #ff5577; background: rgba(255,0,80,0.15); }
-
-.empty-state { color: #c8a8e8; font-size: 14px; padding: 28px 0; text-align: center; }
-
-.menu-sheet {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-  display: none; align-items: flex-end; justify-content: center;
-  z-index: 100;
-}
-.menu-sheet.open { display: flex; }
-.menu-sheet-inner {
-  background: linear-gradient(180deg, #2a0d52 0%, #1a0633 100%);
-  width: 100%; max-width: 480px;
-  border-radius: 16px 16px 0 0; padding: 12px 12px calc(24px + env(safe-area-inset-bottom));
-  border-top: 1px solid rgba(255,255,255,0.1);
-}
-.menu-handle {
-  width: 40px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px;
-  margin: 4px auto 16px;
-}
-.menu-item {
-  width: 100%; background: transparent; border: none; color: #f0e6ff;
-  text-align: left; padding: 16px 14px; font-size: 16px;
-  border-radius: 8px; display: flex; align-items: center; gap: 12px;
-}
-.menu-item:active { background: rgba(255,255,255,0.08); }
-.menu-item.danger { color: #ff5577; }
-.menu-item .menu-icon { font-size: 18px; width: 24px; text-align: center; }
-
-.toast {
-  position: fixed; bottom: calc(20px + env(safe-area-inset-bottom));
-  left: 50%; transform: translateX(-50%);
-  background: #1a2a0a; color: #a3e635; border: 1px solid #a3e635;
-  padding: 12px 20px; border-radius: 24px; font-size: 14px;
-  z-index: 200; opacity: 0; transition: opacity 0.2s;
-  pointer-events: none;
-}
-.toast.show { opacity: 1; }
-
-@media (min-width: 481px) {
-  .app { border-left: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.06); }
-}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;background:#F7F8FC;color:#1A1E5C}
+button,input,select,textarea{font-family:inherit}
+.overlay{position:fixed;inset:0;background:rgba(15,20,60,0.55);z-index:100;display:flex;align-items:flex-end;justify-content:center}
+.overlay-card{background:#fff;border-radius:24px 24px 0 0;padding:28px 22px 44px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto}
+.overlay-card h2{font-size:21px;font-weight:700;color:#1A1E5C;margin-bottom:5px}
+.overlay-card p{font-size:14px;color:#7B8199;line-height:1.55}
+.primary-btn{width:100%;padding:15px;background:#2433B0;color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:600;cursor:pointer}
+.primary-btn:active{background:#1d2a9b}
+.setup-steps{margin:14px 0 16px}
+.setup-step{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:0.5px solid #F0F2FF}
+.setup-step:last-child{border-bottom:none}
+.snum{width:22px;height:22px;border-radius:50%;background:#2433B0;color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.stext{font-size:13px;color:#4B5280;line-height:1.5;flex:1}
+.stext b{color:#1A1E5C;font-weight:600}
+.firebase-link{display:inline-flex;align-items:center;gap:5px;color:#2433B0;font-size:13px;font-weight:500;padding:5px 11px;background:#EEF0FF;border-radius:8px;text-decoration:none;margin-top:6px}
+.cfg-label{font-size:13px;font-weight:600;color:#1A1E5C;margin-bottom:6px;margin-top:16px;display:block}
+.cfg-area{width:100%;padding:12px;border:1.5px solid #DDE0EC;border-radius:12px;font-size:12px;font-family:monospace;color:#1A1E5C;background:#F7F8FC;resize:none;height:110px;outline:none;line-height:1.5}
+.cfg-area:focus{border-color:#2433B0;background:#fff}
+.cfg-err{font-size:13px;color:#E0355A;margin-bottom:8px;display:none;margin-top:4px}
+.user-btn{width:100%;padding:17px 16px;border-radius:14px;border:2.5px solid transparent;background:#F7F8FC;font-size:17px;font-weight:600;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.user-btn .dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.user-btn.scott{border-color:#2433B0;color:#2433B0}
+.user-btn.leigh{border-color:#E0355A;color:#E0355A}
+.user-btn:active{opacity:0.82}
+#app{height:100%;display:flex;flex-direction:column;overflow:hidden}
+.top-bar{flex-shrink:0;padding:10px 16px;display:flex;align-items:center;gap:10px;transition:background 0.25s}
+.top-bar.bg-grocery{background:#2433B0}
+.top-bar.bg-watch{background:#5B21B6}
+.top-bar.bg-todo{background:#065F46}
+.top-bar.bg-shared{background:#92400E}
+.logo-tile{width:38px;height:38px;border-radius:12px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.top-title{font-size:18px;font-weight:700;color:#fff;flex:1}
+.user-chip{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.18);border-radius:99px;padding:4px 10px 4px 6px;cursor:pointer;flex-shrink:0}
+.user-chip-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.user-chip-name{font-size:12px;color:#fff;font-weight:500;white-space:nowrap}
+.section-view{flex:1;overflow:hidden;display:none;flex-direction:column}
+.section-view.active{display:flex}
+.section-scroll{flex:1;overflow-y:auto;padding:10px 14px 24px;-webkit-overflow-scrolling:touch}
+.t-grocery .section-scroll{background:#EAF0FF}
+.t-watch .section-scroll{background:#F0EAFF}
+.t-todo .section-scroll{background:#E6FAF5}
+.t-shared .section-scroll{background:#FEF7E6}
+.section-header{padding:12px 14px 4px;flex-shrink:0}
+.section-title{font-size:21px;font-weight:700}
+.section-sub{font-size:12px;color:#9CA3AF;margin-top:2px}
+.t-grocery .section-title{color:#2433B0}
+.t-watch .section-title{color:#5B21B6}
+.t-todo .section-title{color:#065F46}
+.t-shared .section-title{color:#92400E}
+.tab-bar{display:flex;background:#fff;border-bottom:1.5px solid #E8EAF0;flex-shrink:0}
+.tab-btn{flex:1;border:none;background:none;padding:10px 4px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:700;color:#B0B6CE;position:relative;transition:color 0.15s}
+.tab-btn::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:0;height:3px;border-radius:2px 2px 0 0;transition:width 0.18s ease}
+.tab-btn svg{width:22px;height:22px;stroke:currentColor;stroke-width:1.8;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.tab-btn.ag{color:#2433B0}.tab-btn.ag::after{width:32px;background:#2433B0}
+.tab-btn.aw{color:#5B21B6}.tab-btn.aw::after{width:32px;background:#5B21B6}
+.tab-btn.at{color:#065F46}.tab-btn.at::after{width:32px;background:#065F46}
+.tab-btn.as{color:#92400E}.tab-btn.as::after{width:32px;background:#92400E}
+.add-area{background:#fff;border-radius:14px;padding:11px 12px;margin-bottom:10px;border:1.5px solid #E8EAF0;transition:border-color 0.15s}
+.add-area:focus-within{border-color:#2433B0}
+.add-area.w:focus-within{border-color:#5B21B6}
+.add-area.t:focus-within{border-color:#065F46}
+.add-area.s:focus-within{border-color:#92400E}
+.add-row{display:flex;align-items:center;gap:8px}
+.add-input{flex:1;border:none;outline:none;font-size:15px;color:#1A1E5C;background:transparent;min-width:0}
+.add-input::placeholder{color:#C0C4D6}
+.add-btn{width:34px;height:34px;border-radius:10px;border:none;color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
+.add-btn:active{transform:scale(0.9)}
+.add-btn.g{background:#2433B0}.add-btn.w{background:#5B21B6}.add-btn.t{background:#065F46}.add-btn.s{background:#92400E}
+.add-extras{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.add-select{flex:1;min-width:86px;padding:7px 6px;border:1px solid #DDE0EC;border-radius:9px;font-size:13px;background:#F7F8FC;color:#1A1E5C;outline:none}
+.item{background:#fff;border-radius:14px;padding:11px 12px;margin-bottom:7px;border:0.5px solid #E8EAF0;display:flex;align-items:center;gap:9px;position:relative}
+.user-bar{position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px}
+.item-body{flex:1;min-width:0;padding-left:4px}
+.item-name{font-size:15px;color:#1A1E5C;line-height:1.3;word-break:break-word}
+.item-name.done{text-decoration:line-through;color:#C0C4D6}
+.item-sub{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:5px}
+.cb{width:22px;height:22px;border-radius:50%;border:2px solid #DDE0EC;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all 0.15s}
+.cb.on{background:#2433B0;border-color:#2433B0}
+.cb svg{display:none;stroke:#fff;stroke-width:2.5;fill:none}
+.cb.on svg{display:block}
+.qty-wrap{display:flex;align-items:center;gap:3px;flex-shrink:0}
+.qty-b{width:27px;height:27px;border-radius:8px;border:1px solid #DDE0EC;background:#F7F8FC;font-size:18px;color:#2433B0;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
+.qty-b:active{transform:scale(0.88)}
+.qty-n{font-size:13px;color:#1A1E5C;min-width:16px;text-align:center;font-weight:600}
+.act-row{display:flex;gap:4px;flex-shrink:0}
+.act-b{width:30px;height:30px;border-radius:8px;border:none;background:#F7F8FC;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.act-b:active{transform:scale(0.9)}
+.act-b.del{color:#E0355A}.act-b.eg{color:#2433B0}.act-b.ew{color:#5B21B6}.act-b.et{color:#065F46}.act-b.es{color:#92400E}
+.pill{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:500;white-space:nowrap}
+.p-fruit{background:#FFF1F2;color:#9F1239}.p-vege{background:#ECFDF5;color:#065F46}.p-meat{background:#FEF3C7;color:#92400E}
+.p-dairy{background:#EFF6FF;color:#1E40AF}.p-pantry{background:#F9FAFB;color:#374151}.p-catfood{background:#FFF7ED;color:#C2410C}
+.p-cleaning{background:#F5F3FF;color:#5B21B6}.p-frozen{background:#F0F9FF;color:#0369A1}.p-other{background:#F3F4F6;color:#6B7280}
+.p-now{background:#FEE2E2;color:#991B1B}.p-soon{background:#FEF3C7;color:#92400E}.p-later{background:#F0FDF4;color:#166534}
+.p-towatch{background:#EEF0FF;color:#2433B0}.p-watching{background:#FEF3C7;color:#92400E}.p-watched{background:#DCFCE7;color:#166534}
+.p-tag{background:#F3F4F6;color:#6B7280}
+.cat-hdr{font-size:11px;font-weight:600;color:#9CA3AF;letter-spacing:0.07em;text-transform:uppercase;margin:12px 0 5px 2px}
+.fbar{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px;flex-shrink:0;-webkit-overflow-scrolling:touch}
+.fbar::-webkit-scrollbar{display:none}
+.fchip{padding:6px 13px;border-radius:99px;border:1.5px solid #DDE0EC;background:#fff;font-size:13px;color:#6B7280;cursor:pointer;white-space:nowrap;flex-shrink:0;font-weight:500}
+.fchip.on{border-color:#5B21B6;background:#5B21B6;color:#fff}
+.clear-btn{width:100%;padding:12px;border:1.5px solid #E0355A;border-radius:12px;background:#fff;color:#E0355A;font-size:14px;font-weight:600;cursor:pointer;margin-top:6px}
+.clear-btn:active{background:#FFF1F2}
+.sw-wrap{border-radius:14px;margin-bottom:7px;position:relative;overflow:hidden}
+.sw-bg{position:absolute;inset:0;border-radius:14px;display:flex;align-items:center;padding:0 18px;font-size:13px;font-weight:600}
+.sw-bg.r{background:#DCFCE7;color:#166534;justify-content:flex-start}
+.sw-bg.l{background:#FEE2E2;color:#991B1B;justify-content:flex-end}
+.sw-content{background:#fff;border:0.5px solid #E8EAF0;border-radius:14px;position:relative;z-index:1;will-change:transform;transition:transform 0.2s ease}
+#utost{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1A1E5C;color:#fff;padding:10px 16px;border-radius:13px;font-size:14px;display:flex;align-items:center;gap:12px;z-index:90;white-space:nowrap}
+#utost.hide{display:none}
+.ubtn{background:transparent;border:1px solid rgba(255,255,255,0.35);border-radius:8px;color:#fff;padding:4px 13px;font-size:13px;cursor:pointer;font-weight:500}
+#esheet{position:fixed;bottom:0;left:0;right:0;background:#fff;border-radius:22px 22px 0 0;padding:20px 18px max(env(safe-area-inset-bottom),24px);z-index:200;transform:translateY(100%);transition:transform 0.28s cubic-bezier(.32,.72,0,1)}
+#esheet.open{transform:translateY(0)}
+#ebdrop{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:199;display:none}
+#ebdrop.open{display:block}
+.sheet-handle{width:36px;height:4px;background:#E0E3EE;border-radius:2px;margin:0 auto 14px}
+.sheet-title{font-size:17px;font-weight:700;color:#1A1E5C;margin-bottom:12px}
+.efield{width:100%;padding:12px 13px;border:1.5px solid #DDE0EC;border-radius:12px;font-size:15px;color:#1A1E5C;outline:none;margin-bottom:9px;background:#F7F8FC}
+.efield:focus{border-color:#2433B0;background:#fff}
+.sactions{display:flex;gap:10px;margin-top:2px}
+.sbtn-save{flex:1;padding:14px;background:#2433B0;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer}
+.sbtn-cancel{padding:14px 18px;background:#F3F4F6;color:#6B7280;border:none;border-radius:12px;font-size:15px;cursor:pointer}
+.empty{text-align:center;padding:44px 20px;color:#C0C4D6}
+.empty-icon{font-size:38px;margin-bottom:10px}
+.empty-text{font-size:15px}
+.link-text{font-size:14px;color:#2433B0;text-decoration:underline;word-break:break-all;line-height:1.4}
+.link-hint{font-size:12px;color:#9CA3AF;margin-top:3px}
 </style>
 </head>
 <body>
-<div class="app" id="app"></div>
-<div class="menu-sheet" id="menuSheet">
-  <div class="menu-sheet-inner">
-    <div class="menu-handle"></div>
-    <button class="menu-item" id="settingsBtn"><span class="menu-icon">⚙</span>Bodyweight <span id="weightDisplay" style="color:#666; margin-left:auto;"></span></button>
-    <button class="menu-item" id="exportBtn"><span class="menu-icon">⬇</span>Export sessions (JSON)</button>
-    <button class="menu-item" id="importBtn"><span class="menu-icon">⬆</span>Import sessions (JSON)</button>
-    <button class="menu-item" id="exportCsvBtn"><span class="menu-icon">📊</span>Export as CSV</button>
-    <button class="menu-item danger" id="clearBtn"><span class="menu-icon">🗑</span>Clear all data</button>
-    <button class="menu-item" id="closeMenuBtn" style="color:#666; justify-content:center;">Cancel</button>
+
+<div id="setup-overlay" class="overlay" style="display:none">
+<div class="overlay-card">
+  <h2>Connect List it</h2>
+  <p style="margin-bottom:0">One-time setup — takes about 4 minutes. Free, no card needed.</p>
+  <div class="setup-steps">
+    <div class="setup-step">
+      <div class="snum">1</div>
+      <div class="stext">Sign in to Firebase with Google<br>
+        <a class="firebase-link" href="https://console.firebase.google.com" target="_blank">Open Firebase Console →</a>
+      </div>
+    </div>
+    <div class="setup-step">
+      <div class="snum">2</div>
+      <div class="stext">Click <b>"Create a project"</b> → name it anything → turn off Google Analytics → click <b>Create project</b></div>
+    </div>
+    <div class="setup-step">
+      <div class="snum">3</div>
+      <div class="stext">On the project homepage click the <b>&lt;/&gt; web icon</b> → give it a nickname → <b>Register app</b> → copy the <b>{ … } config block</b> and paste it below</div>
+    </div>
+    <div class="setup-step">
+      <div class="snum">4</div>
+      <div class="stext">In the left sidebar: <b>Build → Realtime Database → Create database</b> → pick any location → <b>Start in test mode</b> → Enable</div>
+    </div>
+  </div>
+  <label class="cfg-label">Paste your config here (from step 3)</label>
+  <div class="cfg-err" id="cfg-err">Couldn't read that — paste just the { … } block from step 3</div>
+  <textarea class="cfg-area" id="cfg-input" placeholder='{&#10;  apiKey: "AIzaSy...",&#10;  authDomain: "...",&#10;  databaseURL: "https://...",&#10;  projectId: "...",&#10;  ...&#10;}'></textarea>
+  <button class="primary-btn" onclick="saveConfig()">Connect →</button>
+</div>
+</div>
+
+<div id="user-overlay" class="overlay" style="display:none">
+<div class="overlay-card">
+  <h2>Who are you?</h2>
+  <p style="margin-bottom:18px">Your items show in your colour so you can see who added what.</p>
+  <button class="user-btn scott" onclick="pickUser('scott')"><div class="dot" style="background:#2433B0"></div>I'm Scott</button>
+  <button class="user-btn leigh" onclick="pickUser('leigh')"><div class="dot" style="background:#E0355A"></div>I'm Leigh</button>
+  <p style="font-size:12px;color:#C0C4D6;text-align:center;margin-top:8px">Tap your name in the top bar anytime to switch</p>
+</div>
+</div>
+
+<div id="spick" style="display:none;position:fixed;inset:0;z-index:250;background:rgba(15,20,60,0.5)" onclick="closeStatus()">
+  <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:22px 22px 0 0;padding:20px 18px max(env(safe-area-inset-bottom),28px)" onclick="event.stopPropagation()">
+    <div style="width:36px;height:4px;background:#E0E3EE;border-radius:2px;margin:0 auto 16px"></div>
+    <div style="font-size:17px;font-weight:700;color:#1A1E5C;margin-bottom:14px">Update status</div>
+    <div id="spick-opts"></div>
   </div>
 </div>
-<input type="file" id="importFile" accept="application/json" style="display:none">
-<div class="toast" id="toast"></div>
+<div id="ebdrop" onclick="closeSheet()"></div>
+<div id="esheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title" id="sheet-title">Edit</div>
+  <div id="sheet-body"></div>
+  <div class="sactions">
+    <button class="sbtn-cancel" onclick="closeSheet()">Cancel</button>
+    <button class="sbtn-save" id="sheet-save">Save</button>
+  </div>
+</div>
+
+<div id="utost" class="hide"><span>Deleted</span><button class="ubtn" onclick="doUndo()">Undo</button></div>
+
+<div id="app" style="display:none">
+  <div class="top-bar bg-grocery" id="top-bar">
+    <div class="logo-tile"><svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="38" height="38" rx="12" fill="white"/><path d="M10 20L16 26L28 12" stroke="#2433B0" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="30" cy="10" r="4" fill="#E0355A"/><circle cx="30" cy="10" r="2" fill="white"/></svg></div>
+    <span class="top-title" id="top-title">Grocery</span>
+    <div class="user-chip" onclick="switchUser()">
+      <div class="user-chip-dot" id="chip-dot"></div>
+      <span class="user-chip-name" id="chip-name"></span>
+    </div>
+    <span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:500;letter-spacing:0.03em">v1.1</span>
+  </div>
+  <div class="tab-bar" id="tab-bar">
+    <button class="tab-btn ag" id="tb-grocery" onclick="goSec('grocery',this)"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Grocery</button>
+    <button class="tab-btn" id="tb-watch" onclick="goSec('watch',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>Watch</button>
+    <button class="tab-btn" id="tb-todo" onclick="goSec('todo',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Buy / Do</button>
+    <button class="tab-btn" id="tb-shared" onclick="goSec('shared',this)"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Shared</button>
+  </div>
+
+  <div class="section-view active t-grocery" id="sv-grocery">
+    <div class="section-header t-grocery"><div class="section-title">Grocery</div><div class="section-sub">Auto-sorted by aisle</div></div>
+    <div class="section-scroll">
+      <div class="add-area"><div class="add-row"><input class="add-input" id="gi" placeholder="Add item…" onkeydown="if(event.key==='Enter')addGrocery()"><button class="add-btn g" onclick="addGrocery()">+</button></div></div>
+      <div id="grocery-list"></div>
+      <button class="clear-btn" onclick="clearChecked()">Clear checked items</button>
+    </div>
+  </div>
+
+  <div class="section-view t-watch" id="sv-watch">
+    <div class="section-header t-watch"><div class="section-title">To Watch</div></div>
+    <div class="section-scroll">
+      <div class="add-area w">
+        <div class="add-row"><input class="add-input" id="wi" placeholder="Title…" onkeydown="if(event.key==='Enter')addWatch()"><button class="add-btn w" onclick="addWatch()">+</button></div>
+        <div class="add-extras">
+          <select class="add-select" id="w-type"><option value="tv">TV show</option><option value="movie">Movie</option></select>
+          <select class="add-select" id="w-genre"><option value="comedy">Comedy</option><option value="drama">Drama</option><option value="thriller">Thriller</option><option value="horror">Horror</option><option value="action">Action</option><option value="documentary">Doco</option><option value="other">Other</option></select>
+          <select class="add-select" id="w-plat"><option value="">Platform…</option><option>Netflix</option><option>Disney+</option><option>Stan</option><option>Binge</option><option>Paramount+</option><option>HBO</option><option>Apple TV+</option><option>Prime</option><option>Cinema</option><option>Other</option></select>
+        </div>
+      </div>
+      <div class="fbar" id="wfilters">
+        <div class="fchip on" data-f="all" onclick="wf(this,'all')">All</div>
+        <div class="fchip" data-f="t:tv" onclick="wf(this,'t:tv')">TV</div>
+        <div class="fchip" data-f="t:movie" onclick="wf(this,'t:movie')">Movie</div>
+        <div class="fchip" data-f="g:comedy" onclick="wf(this,'g:comedy')">Comedy</div>
+        <div class="fchip" data-f="g:drama" onclick="wf(this,'g:drama')">Drama</div>
+        <div class="fchip" data-f="g:thriller" onclick="wf(this,'g:thriller')">Thriller</div>
+        <div class="fchip" data-f="g:horror" onclick="wf(this,'g:horror')">Horror</div>
+        <div class="fchip" data-f="g:action" onclick="wf(this,'g:action')">Action</div>
+        <div class="fchip" data-f="g:documentary" onclick="wf(this,'g:documentary')">Doco</div>
+        <div class="fchip" data-f="s:watching" onclick="wf(this,'s:watching')">Watching</div>
+        <div class="fchip" data-f="s:watched" onclick="wf(this,'s:watched')">Watched</div>
+      </div>
+      <div id="watch-list"></div>
+    </div>
+  </div>
+
+  <div class="section-view t-todo" id="sv-todo">
+    <div class="section-header t-todo"><div class="section-title">Buy / Do</div><div class="section-sub">Tap priority badge to cycle it</div></div>
+    <div class="section-scroll">
+      <div class="add-area t">
+        <div class="add-row"><input class="add-input" id="ti" placeholder="Something to buy or do…" onkeydown="if(event.key==='Enter')addTodo()"><button class="add-btn t" onclick="addTodo()">+</button></div>
+        <div class="add-extras"><select class="add-select" id="t-pri"><option value="now">Now</option><option value="soon" selected>Soon</option><option value="later">Later</option></select></div>
+      </div>
+      <div id="todo-list"></div>
+    </div>
+  </div>
+
+  <div class="section-view t-shared" id="sv-shared">
+    <div class="section-header t-shared"><div class="section-title">Shared</div><div class="section-sub">Links and notes</div></div>
+    <div class="section-scroll">
+      <div class="add-area s"><div class="add-row"><input class="add-input" id="si" placeholder="Paste a link or add a note…" onkeydown="if(event.key==='Enter')addShared()"><button class="add-btn s" onclick="addShared()">+</button></div></div>
+      <div id="shared-list"></div>
+    </div>
+  </div>
+
+</div>
 
 <script>
-const DISCIPLINES = ["Swim", "Run", "Weights", "Row", "Walk", "Other"];
-const DISCIPLINE_CONFIG = {
-  Swim: {
-    color: "#38bdf8", icon: "🏊",
-    fields: [
-      { key: "distance", label: "Distance (km)", type: "number", step: "0.1" },
-      { key: "duration", label: "Duration (min)", type: "number" },
-      { key: "calories", label: "Calories", type: "number" },
-    ],
-  },
-  Row: {
-    color: "#f97316", icon: "🚣",
-    fields: [
-      { key: "duration", label: "Duration (min)", type: "number" },
-      { key: "distance", label: "Distance (km)", type: "number", step: "0.1" },
-      { key: "avgSplit", label: "Avg Split (/500m)", type: "text", placeholder: "auto-calculated, or e.g. 1:52" },
-      { key: "calories", label: "Calories", type: "number" },
-    ],
-  },
-  Run: {
-    color: "#16a34a", icon: "🏃",
-    fields: [
-      { key: "distance", label: "Distance (km)", type: "number", step: "0.1" },
-      { key: "duration", label: "Duration (min)", type: "number" },
-      { key: "pace", label: "Avg Pace (min/km)", type: "text", placeholder: "auto-calculated, or e.g. 5:30" },
-      { key: "calories", label: "Calories", type: "number" },
-    ],
-  },
-  Weights: {
-    color: "#e8f84a", icon: "🏋️",
-    fields: [
-      { key: "duration", label: "Duration (min)", type: "number" },
-      { key: "totalSets", label: "Total Sets", type: "number" },
-      { key: "topLift", label: "Top Lift & Weight", type: "text", placeholder: "e.g. Squat 100kg" },
-      { key: "calories", label: "Calories", type: "number" },
-    ],
-  },
-  Walk: {
-    color: "#94a3b8", icon: "🚶",
-    fields: [
-      { key: "distance", label: "Distance (km)", type: "number", step: "0.1" },
-      { key: "duration", label: "Duration (min)", type: "number" },
-      { key: "avgSpeed", label: "Avg Speed (km/h)", type: "text", placeholder: "auto-calculated, or e.g. 5.5" },
-      { key: "calories", label: "Calories", type: "number" },
-    ],
-  },
-  Other: {
-    color: "#f472b6", icon: "✦",
-    fields: [
-      { key: "type", label: "Activity Type", type: "text", placeholder: "e.g. Hike, Yoga, Football" },
-      { key: "duration", label: "Duration (min)", type: "number" },
-      { key: "distance", label: "Distance (km)", type: "number", step: "0.1" },
-      { key: "calories", label: "Calories", type: "number" },
-    ],
-  },
-};
-// MET values (Metabolic Equivalent of Task) — used for calorie auto-calc.
-// Calories = MET × weight(kg) × hours. Run/Cycle refine based on pace/speed.
-const MET_DEFAULTS = { Swim: 8, Row: 7, Run: 10, Weights: 5, Walk: 3.5, Other: 5 };
-const RPE_LABEL = ["", "Very Easy", "Easy", "Moderate", "Moderate", "Hard", "Hard", "Very Hard", "Very Hard", "Max", "Max"];
-const STORAGE_KEY = "training-log:sessions";
-const SETTINGS_KEY = "training-log:settings";
-const APP_VERSION = "0.11";  // bump this on every deploy so you can verify the right file is live
+const UC={scott:'#2433B0',leigh:'#E0355A'},UN={scott:'Scott',leigh:'Leigh'};
+const CATS={produce:['apple','banana','orange','grape','strawberry','blueberry','mango','pear','peach','cherry','kiwi','watermelon','lemon','lime','pineapple','avocado','berry','berries','melon','plum','nectarine','passionfruit','mandarin','grapefruit','pomegranate','fig','spinach','broccoli','carrot','potato','onion','garlic','tomato','lettuce','cucumber','capsicum','pepper','zucchini','mushroom','celery','corn','bean','peas','asparagus','kale','salad','leek','cabbage','cauliflower','pumpkin','squash','sweet potato','beetroot','radish','ginger','basil','parsley','coriander','mint','chilli','chili','bok choy','silverbeet','rocket','spring onion','fennel','eggplant'],meatdairy:['chicken','beef','pork','lamb','fish','salmon','tuna','prawn','shrimp','mince','steak','sausage','bacon','ham','turkey','duck','meat','seafood','fillet','breast','thigh','wing','ribs','chorizo','salami','deli','schnitzel','cod','barramundi','oyster','crab','milk','cheese','butter','yogurt','yoghurt','cream','egg','eggs','sour cream','ricotta','mozzarella','parmesan','cheddar','feta','brie','margarine','oat milk','almond milk','soy milk','cream cheese','cottage cheese','haloumi']};
+const CORD=['produce','meatdairy','other'];
+const CLBL={produce:'Fruit / Veg',meatdairy:'Meat & Dairy',other:'Other'};
+const PLBL={now:'Now',soon:'Soon',later:'Later'},WLBL={towatch:'To watch',watching:'Watching',watched:'Watched'},GLBL={comedy:'Comedy',drama:'Drama',thriller:'Thriller',horror:'Horror',action:'Action',documentary:'Doco',other:'Other'};
+const SMETA={grocery:{title:'Grocery',bar:'bg-grocery',na:'ag'},watch:{title:'To Watch',bar:'bg-watch',na:'aw'},todo:{title:'Buy / Do',bar:'bg-todo',na:'at'},shared:{title:'Shared',bar:'bg-shared',na:'as'}};
+let me=localStorage.getItem('listit_user'),db=null,live={grocery:{},watch:{},todo:{},shared:{}},wFilters=new Set(['all']),undoData=null,undoTimer=null,sheetCb=null;
 
-// ---------- State ----------
-const state = {
-  sessions: [],
-  view: "log",
-  activeDiscipline: "Swim",
-  historyTab: "Swim",
-  historyRange: "week",  // "week" | "month" | "all"
-  historyMetric: "minutes",  // "minutes" | "calories"
-  editingId: null,  // id of the history session currently being edited, or null
-  form: emptyForm("Swim"),
-  date: todayISO(),
-  saved: false,
-  weight: 94,
-  height: 180,
-};
+const FIREBASE_CFG={apiKey:"AIzaSyB5-IGWXIC2ADnqSY0skG2-4inuKK9RBjE",authDomain:"list-it-42be0.firebaseapp.com",databaseURL:"https://list-it-42be0-default-rtdb.firebaseio.com",projectId:"list-it-42be0",storageBucket:"list-it-42be0.firebasestorage.app",messagingSenderId:"54931131581",appId:"1:54931131581:web:3d6dad84545da89e6f7bd4"};
 
-// Local-date version of YYYY-MM-DD (avoids the UTC off-by-one when the user
-// is east of UTC — Sydney midnight is the previous day in UTC).
-function localISO(d) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+window.onload=()=>{initFirebase(FIREBASE_CFG);};
+function hide(id){document.getElementById(id).style.display='none';}
+
+function initFirebase(cfg){
+  if(!firebase.apps.length)firebase.initializeApp(cfg);
+  db=firebase.database();
+  setupListeners();
+  if(!me){document.getElementById('user-overlay').style.display='flex';}else launchApp();
 }
-function todayISO() { return localISO(new Date()); }
-function parseLocalISO(s) {
-  const [y, m, d] = s.split("-").map(Number);
-  return new Date(y, m - 1, d);
+function pickUser(u){me=u;localStorage.setItem('listit_user',u);hide('user-overlay');launchApp();}
+function launchApp(){const a=document.getElementById('app');a.style.cssText='display:flex;flex-direction:column;height:100%';document.getElementById('chip-dot').style.background=UC[me];document.getElementById('chip-name').textContent=UN[me];addSectionSwipe();setAppIcon();}
+function genAppIcon(){
+  const s=180,c=document.createElement('canvas');c.width=s;c.height=s;const ctx=c.getContext('2d');
+  const r=40;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(s-r,0);ctx.quadraticCurveTo(s,0,s,r);ctx.lineTo(s,s-r);ctx.quadraticCurveTo(s,s,s-r,s);ctx.lineTo(r,s);ctx.quadraticCurveTo(0,s,0,s-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();ctx.fillStyle='#2433B0';ctx.fill();
+  ctx.beginPath();ctx.moveTo(38,92);ctx.lineTo(72,126);ctx.lineTo(142,52);ctx.strokeStyle='#fff';ctx.lineWidth=17;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();
+  ctx.beginPath();ctx.arc(148,38,22,0,Math.PI*2);ctx.fillStyle='#E0355A';ctx.fill();
+  ctx.beginPath();ctx.arc(148,38,10,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+  return c.toDataURL('image/png');
 }
-function mondayOf(d) {
-  const out = new Date(d); out.setHours(0, 0, 0, 0);
-  const offset = (out.getDay() + 6) % 7;  // Mon=0, Sun=6
-  out.setDate(out.getDate() - offset);
-  return out;
+function setAppIcon(){
+  const d=genAppIcon();
+  ['apple-touch-icon','icon'].forEach(rel=>{let l=document.querySelector(`link[rel='${rel}']`);if(!l){l=document.createElement('link');l.rel=rel;document.head.appendChild(l);}l.href=d;});
 }
-function relativeDayLabel(iso) {
-  const todayD = new Date(); todayD.setHours(0, 0, 0, 0);
-  const d = parseLocalISO(iso);
-  const diff = Math.round((d - todayD) / 86400000);
-  if (diff === 0) return "TODAY";
-  if (diff === -1) return "YESTERDAY";
-  if (diff === 1) return "TOMORROW";
-  return d.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short" }).toUpperCase();
+function addSectionSwipe(){const app=document.getElementById('app');let sx=0,sy=0,sw=false;app.addEventListener('touchstart',e=>{if(e.target.closest('.sw-content')||e.target.closest('.fbar'))return;sx=e.touches[0].clientX;sy=e.touches[0].clientY;sw=true;},{passive:true});app.addEventListener('touchend',e=>{if(!sw)return;sw=false;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){if(dx<0&&curSec<SECS.length-1)goSec(SECS[curSec+1],document.getElementById('tb-'+SECS[curSec+1]));else if(dx>0&&curSec>0)goSec(SECS[curSec-1],document.getElementById('tb-'+SECS[curSec-1]));}},{passive:true});}
+function switchUser(){const n=me==='scott'?'leigh':'scott';if(confirm('Switch to '+UN[n]+'?')){me=n;localStorage.setItem('listit_user',me);document.getElementById('chip-dot').style.background=UC[me];document.getElementById('chip-name').textContent=UN[me];}}
+
+function setupListeners(){['grocery','watch','todo','shared'].forEach(s=>{db.ref(s).on('value',snap=>{live[s]=snap.val()||{};renderSec(s);});});}
+function dbSet(p,v){db.ref(p).set(v);}
+function dbDel(p){db.ref(p).remove();}
+function dbNew(s,o){const id='i'+Date.now()+Math.random().toString(36).slice(2,5);db.ref(s+'/'+id).set(o);return id;}
+function renderSec(s){if(s==='grocery')rGrocery();else if(s==='watch')rWatch();else if(s==='todo')rTodo();else if(s==='shared')rShared();}
+
+const SECS=['grocery','watch','todo','shared'];let curSec=0;
+function goSec(name,btn){curSec=SECS.indexOf(name);document.querySelectorAll('.section-view').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(e=>{e.className='tab-btn';});document.getElementById('sv-'+name).classList.add('active');const m=SMETA[name];btn.classList.add(m.na);document.getElementById('top-bar').className='top-bar '+m.bar;document.getElementById('top-title').textContent=m.title;}
+
+const esc=s=>s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):'';
+function catOf(n){const l=n.toLowerCase();for(const[c,ks]of Object.entries(CATS)){if(ks.some(k=>l.includes(k)))return c;}return'other';}
+
+function addGrocery(){const el=document.getElementById('gi'),n=el.value.trim();if(!n)return;dbNew('grocery',{name:n,qty:1,checked:false,cat:catOf(n),by:me,at:Date.now()});el.value='';el.focus();}
+function rGrocery(){
+  const items=Object.entries(live.grocery||{}),el=document.getElementById('grocery-list');
+  if(!items.length){el.innerHTML='<div class="empty"><div class="empty-icon">🛒</div><div class="empty-text">Nothing on the list</div></div>';return;}
+  items.sort((a,b)=>{const ca=CORD.indexOf(a[1].cat||'other'),cb=CORD.indexOf(b[1].cat||'other');return ca!==cb?ca-cb:(a[1].at||0)-(b[1].at||0);});
+  let html='',lc=null;
+  for(const[id,it]of items){const c=(CLBL[it.cat]?it.cat:null)||'other';if(c!==lc){html+=`<div class="cat-hdr">${CLBL[c]}</div>`;lc=c;}
+    html+=`<div class="item"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div><div class="cb${it.checked?' on':''}" onclick="toggleCheck('${id}')"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5"/></svg></div><div class="item-body"><div class="item-name${it.checked?' done':''}">${esc(it.name)}</div></div><div class="qty-wrap"><div class="qty-b" onclick="adjQty('${id}',-1)">−</div><div class="qty-n">${it.qty||1}</div><div class="qty-b" onclick="adjQty('${id}',1)">+</div></div><div class="act-row"><button class="act-b eg" onclick="editGrocery('${id}')">✎</button><button class="act-b del" onclick="rm('grocery','${id}')">✕</button></div></div>`;}
+  el.innerHTML=html;
 }
-function emptyForm(discipline) {
-  return Object.fromEntries(DISCIPLINE_CONFIG[discipline].fields.map(f => [f.key, ""]));
+function toggleCheck(id){const it=live.grocery[id];if(it)dbSet(`grocery/${id}/checked`,!it.checked);}
+function adjQty(id,d){const it=live.grocery[id];if(it)dbSet(`grocery/${id}/qty`,Math.max(1,(it.qty||1)+d));}
+function clearChecked(){Object.entries(live.grocery||{}).forEach(([id,it])=>{if(it.checked)rm('grocery',id);});}
+function editGrocery(id){const it=live.grocery[id];openSheet('Edit item',`<input class="efield" id="ef-n" value="${esc(it.name)}" placeholder="Name"><select class="efield" id="ef-c">${CORD.map(c=>`<option value="${c}"${it.cat===c?' selected':''}>${CLBL[c]}</option>`).join('')}</select>`,()=>{const n=document.getElementById('ef-n').value.trim(),c=document.getElementById('ef-c').value;if(n){dbSet(`grocery/${id}/name`,n);dbSet(`grocery/${id}/cat`,c);}});}
+
+function addWatch(){const t=document.getElementById('wi').value.trim();if(!t)return;dbNew('watch',{title:t,type:document.getElementById('w-type').value,genre:document.getElementById('w-genre').value,platform:document.getElementById('w-plat').value||'',status:'towatch',by:me,at:Date.now()});document.getElementById('wi').value='';document.getElementById('w-plat').value='';}
+function wf(chip,f){if(f==='all'){wFilters.clear();wFilters.add('all');document.querySelectorAll('#wfilters .fchip').forEach(c=>c.classList.remove('on'));chip.classList.add('on');}else{wFilters.delete('all');document.querySelector('[data-f="all"]').classList.remove('on');if(wFilters.has(f)){wFilters.delete(f);chip.classList.remove('on');if(!wFilters.size){wFilters.add('all');document.querySelector('[data-f="all"]').classList.add('on');}}else{wFilters.add(f);chip.classList.add('on');}}rWatch();}
+function wMatch(it){if(wFilters.has('all'))return true;const tf=[...wFilters].filter(x=>x.startsWith('t:')),gf=[...wFilters].filter(x=>x.startsWith('g:')),sf=[...wFilters].filter(x=>x.startsWith('s:'));if(tf.length&&!tf.some(x=>x==='t:'+it.type))return false;if(gf.length&&!gf.some(x=>x==='g:'+it.genre))return false;if(sf.length&&!sf.some(x=>x==='s:'+(it.status||'towatch')))return false;return true;}
+function rWatch(){
+  const items=Object.entries(live.watch||{}).filter(([,it])=>wMatch(it)),el=document.getElementById('watch-list');
+  if(!items.length){el.innerHTML='<div class="empty"><div class="empty-icon">🎬</div><div class="empty-text">Nothing to watch yet</div></div>';return;}
+  const ord=['watching','towatch','watched'];
+  items.sort((a,b)=>{const sa=ord.indexOf(a[1].status||'towatch'),sb=ord.indexOf(b[1].status||'towatch');return sa!==sb?sa-sb:(b[1].at||0)-(a[1].at||0);});
+  el.innerHTML=items.map(([id,it])=>{const st=it.status||'towatch';
+    return `<div class="item" id="wi-${id}" style="user-select:none"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div><div class="item-body"><div class="item-name">${esc(it.title)}</div><div class="item-sub"><span class="pill p-tag">${it.type==='tv'?'TV':'Movie'}</span><span class="pill p-tag">${GLBL[it.genre]||it.genre}</span>${it.platform?`<span class="pill p-tag">${esc(it.platform)}</span>`:''}<span class="pill p-${st}" style="cursor:pointer" onclick="pickStatus('${id}')">${WLBL[st]}</span></div></div><div class="act-row"><button class="act-b ew" onclick="editWatch('${id}')">✎</button><button class="act-b del" onclick="rm('watch','${id}')">✕</button></div></div>`;
+  }).join('');
+  items.forEach(([id])=>addLongPress(id));
 }
-function formatDate(iso) {
-  return new Date(iso).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" });
-}
-function escapeHtml(s) {
-  return String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c]));
-}
-function uid() {
-  return (crypto.randomUUID && crypto.randomUUID()) || (Date.now() + "-" + Math.random().toString(36).slice(2));
-}
-// Tint a hex color (#rrggbb or #rgb) toward an alpha overlay onto the dark bg.
-function hexToRgb(hex) {
-  let h = hex.replace("#", "");
-  if (h.length === 3) h = h.split("").map(c => c + c).join("");
-  return { r: parseInt(h.slice(0, 2), 16), g: parseInt(h.slice(2, 4), 16), b: parseInt(h.slice(4, 6), 16) };
-}
-function disciplineBtnStyle(color, active) {
-  const { r, g, b } = hexToRgb(color);
-  if (active) {
-    return `background:${color}; border-color:${color}; color:#1a0633;`;
-  }
-  // Inactive: ~28% tint of the color on top of the dark purple background
-  return `background:rgba(${r},${g},${b},0.22); border-color:rgba(${r},${g},${b},0.7); color:#f0e6ff;`;
-}
+function addLongPress(id){const el=document.getElementById('wi-'+id);if(!el)return;let t;el.addEventListener('touchstart',()=>{t=setTimeout(()=>{if(navigator.vibrate)navigator.vibrate(40);pickStatus(id);},600);},{passive:true});el.addEventListener('touchend',()=>clearTimeout(t),{passive:true});el.addEventListener('touchmove',()=>clearTimeout(t),{passive:true});}
+function pickStatus(id){const it=live.watch[id];if(!it)return;const cur=it.status||'towatch';document.getElementById('spick-opts').innerHTML=[['towatch','📋','To Watch'],['watching','▶️','Watching'],['watched','✅','Watched']].map(([s,ic,lb])=>`<button onclick="setWatchStatus('${id}','${s}')" style="width:100%;text-align:left;padding:14px 16px;border-radius:12px;border:2px solid ${cur===s?'#5B21B6':'#E8EAF0'};background:${cur===s?'#F3EEFF':'#fff'};color:${cur===s?'#5B21B6':'#1A1E5C'};font-size:16px;font-weight:600;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;gap:10px"><span>${ic}</span>${lb}</button>`).join('');document.getElementById('spick').style.display='block';}
+function setWatchStatus(id,status){dbSet(`watch/${id}/status`,status);closeStatus();}
+function closeStatus(){document.getElementById('spick').style.display='none';}
+function editWatch(id){const it=live.watch[id];openSheet('Edit',`<input class="efield" id="ef-t" value="${esc(it.title)}" placeholder="Title"><select class="efield" id="ef-tp"><option value="tv"${it.type==='tv'?' selected':''}>TV show</option><option value="movie"${it.type==='movie'?' selected':''}>Movie</option></select><select class="efield" id="ef-g">${['comedy','drama','thriller','horror','action','documentary','other'].map(g=>`<option value="${g}"${it.genre===g?' selected':''}>${GLBL[g]}</option>`).join('')}</select><select class="efield" id="ef-p"><option value="">No platform</option>${['Netflix','Disney+','Stan','Binge','Paramount+','HBO','Apple TV+','Prime','Cinema','Other'].map(p=>`<option value="${p}"${it.platform===p?' selected':''}>${p}</option>`).join('')}</select><select class="efield" id="ef-s">${['towatch','watching','watched'].map(s=>`<option value="${s}"${(it.status||'towatch')===s?' selected':''}>${WLBL[s]}</option>`).join('')}</select>`,()=>{const t=document.getElementById('ef-t').value.trim();if(!t)return;dbSet(`watch/${id}/title`,t);dbSet(`watch/${id}/type`,document.getElementById('ef-tp').value);dbSet(`watch/${id}/genre`,document.getElementById('ef-g').value);dbSet(`watch/${id}/platform`,document.getElementById('ef-p').value);dbSet(`watch/${id}/status`,document.getElementById('ef-s').value);});}
 
-// ---------- Storage ----------
-function loadSessions() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      state.sessions = JSON.parse(raw);
-      // v0.10 migration: Cycle discipline was retired in favour of Walk.
-      // Rename any legacy sessions so they keep rendering instead of orphaning.
-      state.sessions.forEach(s => { if (s.discipline === "Cycle") s.discipline = "Walk"; });
-    }
-  } catch (e) { console.warn("Load failed", e); }
-}
-function saveSessions() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.sessions)); }
-  catch (e) { console.warn("Save failed", e); }
-}
-function loadSettings() {
-  try {
-    const raw = localStorage.getItem(SETTINGS_KEY);
-    if (raw) {
-      const s = JSON.parse(raw);
-      if (s.weight) state.weight = Number(s.weight);
-      if (s.height) state.height = Number(s.height);
-    }
-  } catch (e) { console.warn("Load settings failed", e); }
-}
-function saveSettings() {
-  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({ weight: state.weight, height: state.height })); }
-  catch (e) { console.warn("Save settings failed", e); }
-}
+function addTodo(){const el=document.getElementById('ti'),t=el.value.trim();if(!t)return;dbNew('todo',{text:t,priority:document.getElementById('t-pri').value,by:me,at:Date.now()});el.value='';el.focus();}
+function rTodo(){const items=Object.entries(live.todo||{}),el=document.getElementById('todo-list');if(!items.length){el.innerHTML='<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Nothing to buy or do</div></div>';return;}const po=['now','soon','later'];items.sort((a,b)=>{const pa=po.indexOf(a[1].priority||'soon'),pb=po.indexOf(b[1].priority||'soon');return pa!==pb?pa-pb:(a[1].at||0)-(b[1].at||0);});el.innerHTML=items.map(([id,it])=>`<div class="item"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div><div class="item-body"><div class="item-name">${esc(it.text)}</div></div><span class="pill p-${it.priority||'soon'}" style="cursor:pointer" onclick="cyclePri('${id}')">${PLBL[it.priority||'soon']}</span><div class="act-row"><button class="act-b et" onclick="editTodo('${id}')">✎</button><button class="act-b del" onclick="rm('todo','${id}')">✕</button></div></div>`).join('');}
+function cyclePri(id){const it=live.todo[id];if(!it)return;const po=['now','soon','later'],i=po.indexOf(it.priority||'soon');dbSet(`todo/${id}/priority`,po[(i+1)%3]);}
+function editTodo(id){const it=live.todo[id];openSheet('Edit',`<input class="efield" id="ef-tx" value="${esc(it.text)}" placeholder="Task"><select class="efield" id="ef-pr">${['now','soon','later'].map(p=>`<option value="${p}"${it.priority===p?' selected':''}>${PLBL[p]}</option>`).join('')}</select>`,()=>{const t=document.getElementById('ef-tx').value.trim(),p=document.getElementById('ef-pr').value;if(t){dbSet(`todo/${id}/text`,t);dbSet(`todo/${id}/priority`,p);}});}
 
-// ---------- Computed helpers ----------
-function autoPace(distance, duration) {
-  const d = parseFloat(distance), m = parseFloat(duration);
-  if (!d || !m || d <= 0) return "";
-  const paceMin = m / d;
-  const mins = Math.floor(paceMin);
-  const secs = Math.round((paceMin - mins) * 60);
-  return `${mins}:${String(secs).padStart(2, "0")}`;
-}
-function autoSplit(distance, duration) {
-  const d = parseFloat(distance), m = parseFloat(duration);
-  if (!d || !m || d <= 0) return "";
-  const splitMin = m / (d * 2); // per 500m
-  const mins = Math.floor(splitMin);
-  const secs = Math.round((splitMin - mins) * 60);
-  return `${mins}:${String(secs).padStart(2, "0")}`;
-}
-function autoSpeed(distance, duration) {
-  const d = parseFloat(distance), m = parseFloat(duration);
-  if (!d || !m || m <= 0) return "";
-  return ((d / m) * 60).toFixed(1);
-}
-// Parse a split like "1:52" or "2:07.5" to seconds. Returns 0 if invalid.
-function parseSplitToSeconds(s) {
-  if (!s) return 0;
-  const str = String(s).trim();
-  const m = /^(\d{1,2}):(\d{1,2}(?:\.\d+)?)$/.exec(str);
-  if (!m) return 0;
-  const mins = parseInt(m[1], 10);
-  const secs = parseFloat(m[2]);
-  if (isNaN(mins) || isNaN(secs) || secs >= 60) return 0;
-  return mins * 60 + secs;
-}
-// Concept2's split-to-power formula:
-//   power (W) = 2.80 / pace^3, where pace is in sec per metre
-//   so pace_per_m = split_sec_per_500m / 500
-function rowingPowerFromSplit500(splitSeconds) {
-  if (!splitSeconds || splitSeconds <= 0) return 0;
-  const pacePerMeter = splitSeconds / 500;
-  return 2.80 / Math.pow(pacePerMeter, 3);
-}
-// MET from power using anchors that match runbundle's calculator.
-// First three are midpoints of the 2024 Compendium's stationary-rowing bands;
-// the 200W anchor is the START of the ≥200W band (compendium's 14 MET value
-// pinned exactly); 290W is the male elite peak from runbundle's text, used
-// as the upper extrapolation anchor at 17.5 MET so the curve keeps rising
-// for high-power workouts without an awkward flat-line cap.
-//   50W  -> 5.0 MET   (midpoint of <100W band)
-//   125W -> 7.5 MET   (midpoint of 100-149W band)
-//   175W -> 11.0 MET  (midpoint of 150-199W band)
-//   200W -> 14.0 MET  (start of ≥200W band — pinned to compendium)
-//   290W -> 17.5 MET  (elite reference, extrapolation anchor)
-// Linear interp between, extrapolation outside, MET floor of 3.
-function rowingMetFromPower(watts) {
-  const anchors = [[50, 5.0], [125, 7.5], [175, 11.0], [200, 14.0], [290, 17.5]];
-  if (watts <= anchors[0][0]) {
-    const [x1, y1] = anchors[0], [x2, y2] = anchors[1];
-    const slope = (y2 - y1) / (x2 - x1);
-    return Math.max(3, y1 + slope * (watts - x1));
-  }
-  for (let i = 0; i < anchors.length - 1; i++) {
-    const [x1, y1] = anchors[i], [x2, y2] = anchors[i + 1];
-    if (watts <= x2) {
-      const slope = (y2 - y1) / (x2 - x1);
-      return y1 + slope * (watts - x1);
-    }
-  }
-  const [x1, y1] = anchors[anchors.length - 2];
-  const [x2, y2] = anchors[anchors.length - 1];
-  const slope = (y2 - y1) / (x2 - x1);
-  return y2 + slope * (watts - x2);
-}
-function metFor(discipline, duration, distance, splitStr) {
-  const baseMET = MET_DEFAULTS[discipline] || 5;
-  const dur = parseFloat(duration), dist = parseFloat(distance);
-  if (!dur || dur <= 0) return baseMET;
-  // Run: refine by pace (min/km)
-  if (discipline === "Run" && dist > 0) {
-    const pace = dur / dist;
-    if (pace < 4) return 14.5;
-    if (pace < 5) return 11.5;
-    if (pace < 6) return 9.8;
-    if (pace < 7) return 8.3;
-    return 6.8;
-  }
-  // Walk: refine by avg speed (km/h) — values from 2024 Compendium of
-  // Physical Activities (walking section), thresholds in km/h:
-  //   2 mph (3.2 km/h)  -> 2.8 MET (slow)
-  //   2.5 mph (4.0 km/h) -> 3.0 MET
-  //   3 mph (4.8 km/h)  -> 3.5 MET (moderate)
-  //   3.5 mph (5.6 km/h) -> 4.3 MET (brisk)
-  //   4 mph (6.4 km/h)  -> 5.0 MET (very brisk)
-  //   4.5 mph (7.2 km/h) -> 7.0 MET (essentially light jogging)
-  if (discipline === "Walk" && dist > 0) {
-    const speed = (dist / dur) * 60;
-    if (speed > 7.2) return 7.0;
-    if (speed > 6.4) return 5.5;
-    if (speed > 5.6) return 5.0;
-    if (speed > 4.8) return 4.3;
-    if (speed > 4.0) return 3.5;
-    if (speed > 3.2) return 3.0;
-    return 2.8;
-  }
-  // Row: runbundle / 2024 Compendium method via Concept2 split->power.
-  // Prefer an explicit avgSplit if the user typed one (most accurate, matches
-  // what the rower's display reports); otherwise derive from distance + dur.
-  if (discipline === "Row") {
-    let splitSec = parseSplitToSeconds(splitStr);
-    if (!splitSec && dist > 0) {
-      splitSec = (dur * 60) / (dist * 2);  // sec per 500m
-    }
-    if (splitSec > 0) {
-      const watts = rowingPowerFromSplit500(splitSec);
-      return rowingMetFromPower(watts);
-    }
-  }
-  return baseMET;
-}
-function calcCalories(discipline, duration, distance, splitStr) {
-  const dur = parseFloat(duration);
-  if (!dur || dur <= 0) return "";
-  const weight = state.weight || 94;
-  const met = metFor(discipline, duration, distance, splitStr);
-  return String(Math.round(met * weight * (dur / 60)));
-}
+function urlHint(u){try{const x=new URL(u),d=x.hostname.replace('www.',''),p=x.pathname.replace(/\/$/,'').split('/').filter(Boolean).slice(0,3).join(' › ');return d+(p?' · '+p:'');}catch(e){return '';}}
+function addShared(){const el=document.getElementById('si'),t=el.value.trim();if(!t)return;const isUrl=/^https?:\/\//i.test(t);dbNew('shared',{text:t,isUrl,hint:isUrl?urlHint(t):'',note:'',by:me,at:Date.now()});el.value='';el.focus();}
+function rShared(){const items=Object.entries(live.shared||{}),el=document.getElementById('shared-list');if(!items.length){el.innerHTML='<div class="empty"><div class="empty-icon">🔗</div><div class="empty-text">No links or notes yet</div></div>';return;}items.sort((a,b)=>(b[1].at||0)-(a[1].at||0));el.innerHTML=items.map(([id,it])=>`<div class="item"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div><div class="item-body" style="min-width:0;overflow:hidden">${it.isUrl?`<a href="${esc(it.text)}" target="_blank" class="link-text">${esc(it.note||it.hint||it.text)}</a><div class="link-hint">${esc(it.hint||'')}</div>`:`<div class="item-name" style="white-space:pre-wrap">${esc(it.text)}</div>${it.note?`<div style="font-size:13px;color:#9CA3AF;margin-top:3px">${esc(it.note)}</div>`:''}`}</div><div class="act-row"><button class="act-b es" onclick="editShared('${id}')">✎</button><button class="act-b del" onclick="rm('shared','${id}')">✕</button></div></div>`).join('');}
+function editShared(id){const it=live.shared[id];openSheet('Edit',`<input class="efield" id="ef-u" value="${esc(it.text)}" placeholder="Link or note"><input class="efield" id="ef-no" value="${esc(it.note||'')}" placeholder="Add a label (optional)">`,()=>{const t=document.getElementById('ef-u').value.trim(),n=document.getElementById('ef-no').value.trim();if(t){const isUrl=/^https?:\/\//i.test(t);dbSet(`shared/${id}/text`,t);dbSet(`shared/${id}/isUrl`,isUrl);dbSet(`shared/${id}/hint`,isUrl?urlHint(t):'');dbSet(`shared/${id}/note`,n);}});}
 
-// ---------- Render ----------
-function render() {
-  const app = document.getElementById("app");
-  app.innerHTML = `
-    <div class="header">
-      <div class="title">
-        <span>TRACKR</span>
-        <button class="menu-btn" id="openMenu" aria-label="Menu">⋯</button>
-      </div>
-      <div class="title-meta">${state.sessions.length} session${state.sessions.length === 1 ? "" : "s"} tracked <span style="opacity:0.5; margin-left:6px;">v${APP_VERSION}</span></div>
-      <div class="tabs" role="tablist">
-        <button class="tab ${state.view === "log" ? "active" : ""}" data-view="log" role="tab">LOG SESSION</button>
-        <button class="tab ${state.view === "history" ? "active" : ""}" data-view="history" role="tab">HISTORY</button>
-      </div>
-    </div>
-    <div class="section">
-      ${state.view === "log" ? renderLog() : renderHistory()}
-    </div>
-  `;
-  attachHandlers();
-}
+function rm(sec,id){const it=live[sec][id];if(!it)return;undoData={sec,id,it:JSON.parse(JSON.stringify(it))};dbDel(`${sec}/${id}`);showUndo();}
+function showUndo(){clearTimeout(undoTimer);document.getElementById('utost').classList.remove('hide');undoTimer=setTimeout(()=>{document.getElementById('utost').classList.add('hide');undoData=null;},3000);}
+function doUndo(){if(!undoData)return;clearTimeout(undoTimer);db.ref(`${undoData.sec}/${undoData.id}`).set(undoData.it);document.getElementById('utost').classList.add('hide');undoData=null;}
 
-function renderLog() {
-  const cfg = DISCIPLINE_CONFIG[state.activeDiscipline];
-  const selectedSessions = state.sessions.filter(s => s.date === state.date);
-  const dateLabel = relativeDayLabel(state.date);
-
-  return `
-    <div class="discipline-grid" role="tablist" aria-label="Discipline">
-      ${DISCIPLINES.map(d => {
-        const c = DISCIPLINE_CONFIG[d];
-        const active = state.activeDiscipline === d;
-        return `
-          <button class="discipline-btn${active ? ' active' : ''}" data-discipline="${d}" role="tab" aria-selected="${active}"
-            style="${disciplineBtnStyle(c.color, active)}">
-            <div class="icon">${c.icon}</div>
-            <div class="label">${d}</div>
-          </button>
-        `;
-      }).join("")}
-    </div>
-
-    <div class="field">
-      <label class="field-label" for="dateInput">DATE</label>
-      <div class="date-row">
-        <button class="date-nav" type="button" data-date-step="-1" aria-label="Previous day">‹</button>
-        <div class="date-input-wrap ${state.date === todayISO() ? 'is-today' : ''}">
-          <input id="dateInput" class="input" type="date" value="${state.date}">
-          ${state.date === todayISO() ? '<span class="date-today-badge">TODAY</span>' : ''}
-        </div>
-        <button class="date-nav" type="button" data-date-step="1" aria-label="Next day">›</button>
-      </div>
-    </div>
-
-    ${cfg.fields.map(f => {
-      const isNumber = f.type === "number";
-      const allowsDecimal = isNumber && !!f.step;
-      const actualType = isNumber ? "text" : f.type;
-      const inputmode = isNumber ? (allowsDecimal ? "decimal" : "numeric") : "";
-      const pattern = allowsDecimal ? `pattern="[0-9]*[.,]?[0-9]*"` : (isNumber ? `pattern="[0-9]*"` : "");
-      return `
-      <div class="field">
-        <label class="field-label" for="field-${f.key}">${f.label.toUpperCase()}</label>
-        <input id="field-${f.key}" class="input" type="${actualType}"
-          ${inputmode ? `inputmode="${inputmode}"` : ""}
-          ${pattern}
-          autocomplete="off" autocorrect="off" spellcheck="false"
-          placeholder="${escapeHtml(f.placeholder || "")}"
-          value="${escapeHtml(state.form[f.key])}"
-          data-field="${f.key}">
-        ${renderComputedHint(f.key)}
-      </div>
-      `;
-    }).join("")}
-
-    <button class="save-btn ${state.saved ? "saved" : ""}" id="saveBtn"
-      style="background:${state.saved ? "" : cfg.color};">
-      ${state.saved ? "✓ SESSION SAVED" : "SAVE SESSION"}
-    </button>
-
-    ${selectedSessions.length > 0 ? `
-      <div class="today-section">
-        <div class="today-label">SESSIONS · ${dateLabel}</div>
-        ${selectedSessions.map(s => {
-          const c = DISCIPLINE_CONFIG[s.discipline];
-          const bits = [];
-          if (s.data.distance) bits.push(`${s.data.distance}km`);
-          if (s.data.duration) bits.push(`${s.data.duration}min`);
-          if (s.data.calories) bits.push(`${s.data.calories} kcal`);
-          return `
-            <div class="today-item" style="border-left-color:${c.color};">
-              <span class="icon">${c.icon}</span>
-              <div>
-                <div class="name">${s.discipline}</div>
-                <div class="meta">${bits.join(" · ")}</div>
-              </div>
-            </div>
-          `;
-        }).join("")}
-      </div>
-    ` : ""}
-  `;
-}
-
-function renderComputedHint(fieldKey) {
-  const d = state.form.distance, m = state.form.duration;
-  if (fieldKey === "pace" && d && m && !state.form.pace) {
-    const p = autoPace(d, m);
-    return p ? `<div class="computed-hint">auto: ${p} min/km — tap to use</div>` : "";
-  }
-  if (fieldKey === "avgSplit" && d && m && !state.form.avgSplit) {
-    const p = autoSplit(d, m);
-    return p ? `<div class="computed-hint">auto: ${p} /500m — tap to use</div>` : "";
-  }
-  if (fieldKey === "avgSpeed" && d && m && !state.form.avgSpeed) {
-    const s = autoSpeed(d, m);
-    return s ? `<div class="computed-hint">auto: ${s} km/h — tap to use</div>` : "";
-  }
-  if (fieldKey === "calories" && m && !state.form.calories) {
-    const c = calcCalories(state.activeDiscipline, m, d, state.form.avgSplit);
-    return c ? `<div class="computed-hint">auto: ~${c} kcal — tap to use</div>` : "";
-  }
-  return "";
-}
-
-function renderRpePreview(cfg) {
-  const rpe = Number(state.form.rpe);
-  if (!rpe || rpe < 1 || rpe > 10) return "";
-  return `
-    <div class="rpe-preview" style="background:${cfg.color}12; border-left-color:${cfg.color};">
-      <div class="rpe-preview-label" style="color:${cfg.color};">${RPE_LABEL[rpe]} effort</div>
-      <div class="rpe-preview-bar">
-        ${Array.from({ length: 10 }, (_, i) => `<div style="${i < rpe ? `background:${cfg.color};` : ""}"></div>`).join("")}
-      </div>
-    </div>
-  `;
-}
-
-function renderHistory() {
-  const r = state.historyRange;
-  return `
-    <div class="range-toggle" role="tablist">
-      <button class="range-btn ${r === "week" ? "active" : ""}" data-range="week">THIS WEEK</button>
-      <button class="range-btn ${r === "month" ? "active" : ""}" data-range="month">THIS MONTH</button>
-      <button class="range-btn ${r === "all" ? "active" : ""}" data-range="all">ALL TIME</button>
-    </div>
-    ${renderDailyVolume()}
-    <div style="margin-top:24px;">
-      <div class="today-label">BY DISCIPLINE</div>
-      <div class="discipline-grid" style="margin-bottom:16px;">
-        ${DISCIPLINES.map(d => {
-          const c = DISCIPLINE_CONFIG[d];
-          const active = state.historyTab === d;
-          const count = state.sessions.filter(s => s.discipline === d).length;
-          return `
-            <button class="discipline-btn${active ? ' active' : ''}" data-history-tab="${d}"
-              style="${disciplineBtnStyle(c.color, active)}">
-              <div class="icon">${c.icon}</div>
-              <div class="label">${d}</div>
-              <div class="count">${count}</div>
-            </button>
-          `;
-        }).join("")}
-      </div>
-      ${renderDisciplineStats(state.historyTab)}
-    </div>
-  `;
-}
-
-function renderDailyVolume() {
-  const range = state.historyRange || "week";
-  const metric = state.historyMetric || "minutes";
-  const isMin = metric === "minutes";
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const todayKey = localISO(today);
-  const buckets = [];   // [{ key, date, label: {top, bot}, isToday, isWeekend, totals, total }]
-  let granularity = "day";  // or "week" for all-time
-  let chartTitle = "";
-  const metricNoun = isMin ? "TRAINING TIME" : "CALORIES";
-
-  if (range === "week") {
-    chartTitle = `THIS WEEK · DAILY ${metricNoun}`;
-    const monday = mondayOf(today);
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(monday); d.setDate(monday.getDate() + i);
-      buckets.push({
-        key: localISO(d), date: d,
-        label: { top: d.toLocaleDateString("en-AU", { weekday: "narrow" }), bot: String(d.getDate()) },
-        isToday: localISO(d) === todayKey,
-        isWeekend: d.getDay() === 0 || d.getDay() === 6,
-      });
-    }
-  } else if (range === "month") {
-    const monthName = today.toLocaleDateString("en-AU", { month: "long" }).toUpperCase();
-    chartTitle = `${monthName} · DAILY ${metricNoun}`;
-    const first = new Date(today.getFullYear(), today.getMonth(), 1);
-    const last = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    for (let d = new Date(first); d <= last; d.setDate(d.getDate() + 1)) {
-      const day = new Date(d);
-      buckets.push({
-        key: localISO(day), date: day,
-        label: { top: day.toLocaleDateString("en-AU", { weekday: "narrow" }), bot: String(day.getDate()) },
-        isToday: localISO(day) === todayKey,
-        isWeekend: day.getDay() === 0 || day.getDay() === 6,
-      });
-    }
-  } else {
-    // all time: aggregate by week (Mon-Sun) from first session to current week
-    granularity = "week";
-    chartTitle = `ALL TIME · WEEKLY ${metricNoun}`;
-    if (state.sessions.length === 0) {
-      // fall back to current week, empty
-      const monday = mondayOf(today);
-      buckets.push({ key: localISO(monday), date: monday, label: { top: "W", bot: String(monday.getDate()) }, isToday: false, isWeekend: false });
-    } else {
-      let earliest = state.sessions[0].date;
-      state.sessions.forEach(s => { if (s.date < earliest) earliest = s.date; });
-      const startMonday = mondayOf(parseLocalISO(earliest));
-      const currentMonday = mondayOf(today);
-      const thisMondayKey = localISO(currentMonday);
-      for (let m = new Date(startMonday); m <= currentMonday; m.setDate(m.getDate() + 7)) {
-        const wk = new Date(m);
-        buckets.push({
-          key: localISO(wk), date: wk,
-          label: { top: wk.toLocaleDateString("en-AU", { month: "short" }).toUpperCase(), bot: String(wk.getDate()) },
-          isToday: localISO(wk) === thisMondayKey,
-          isWeekend: false,
-        });
-      }
-    }
-  }
-
-  // zero out totals
-  buckets.forEach(b => { b.totals = {}; DISCIPLINES.forEach(d => b.totals[d] = 0); b.total = 0; });
-
-  // aggregate session values (duration in minutes OR calories) per bucket
-  state.sessions.forEach(s => {
-    const val = parseFloat(isMin ? s.data?.duration : s.data?.calories);
-    if (!val || val <= 0) return;
-    let bucketKey;
-    if (granularity === "day") {
-      bucketKey = s.date;
-    } else {
-      bucketKey = localISO(mondayOf(parseLocalISO(s.date)));
-    }
-    const b = buckets.find(x => x.key === bucketKey);
-    if (!b) return;
-    b.totals[s.discipline] = (b.totals[s.discipline] || 0) + val;
-    b.total += val;
-  });
-
-  // pick a nice yMax that's a multiple of the gridStep — different scales per metric
-  const rawMax = Math.max(...buckets.map(b => b.total), 0);
-  function pickStepMin(v) {
-    if (v <= 180) return 30;
-    if (v <= 360) return 60;
-    if (v <= 720) return 120;
-    if (v <= 1440) return 240;
-    return Math.ceil(v / 6 / 60) * 60;
-  }
-  function pickStepCal(v) {
-    if (v <= 500) return 100;
-    if (v <= 1000) return 200;
-    if (v <= 2500) return 500;
-    if (v <= 5000) return 1000;
-    return Math.ceil(v / 5 / 1000) * 1000;
-  }
-  let step = isMin ? pickStepMin(rawMax) : pickStepCal(rawMax);
-  let yMax = Math.max(step * 2, Math.ceil(rawMax / step) * step);
-  if (yMax === 0) yMax = step * 2;
-  const chartHeight = 160;
-
-  // Average over ELAPSED buckets only (rest days included, future days excluded).
-  // So on Wednesday in "this week" view, divide by 3 (Mon/Tue/Wed) — not 7.
-  // For all-time weekly view: count weeks whose Monday is on or before today.
-  const elapsedBuckets = buckets.filter(b => b.date <= today);
-  const avgVal = elapsedBuckets.length > 0
-    ? elapsedBuckets.reduce((sum, b) => sum + b.total, 0) / elapsedBuckets.length
-    : 0;
-
-  function fmtMin(m) {
-    m = Math.round(m);
-    if (m === 0) return "0";
-    if (m < 60) return m + "m";
-    const h = Math.floor(m / 60), rem = m % 60;
-    return rem === 0 ? h + "h" : h + "h " + rem + "m";
-  }
-  function fmtCal(c) {
-    c = Math.round(c);
-    if (c >= 1000) return (c / 1000).toFixed(c % 1000 === 0 ? 0 : 1) + "k";
-    return String(c);
-  }
-  const fmtVal = isMin ? fmtMin : fmtCal;
-  const unitLabel = isMin ? "" : " kcal";
-
-  // Build y-axis ticks (every step from 0 to yMax inclusive)
-  const ticks = [];
-  for (let v = 0; v <= yMax; v += step) ticks.push(v);
-
-  const dense = buckets.length > 14;
-  const yAxisHTML = ticks.map(v => {
-    const pctFromTop = ((yMax - v) / yMax) * 100;
-    const zero = v === 0 ? "y-zero" : "";
-    return `<span class="${zero}" style="top:${pctFromTop}%;">${fmtVal(v)}</span>`;
-  }).join("");
-  const gridHTML = ticks.map(v => {
-    const pctFromTop = ((yMax - v) / yMax) * 100;
-    const zero = v === 0 ? "zero" : "";
-    return `<div class="${zero}" style="top:${pctFromTop}%;"></div>`;
-  }).join("");
-
-  // Average line position (from bottom). Only show if avg > 0 and chart has data.
-  const avgPctFromBottom = avgVal > 0 ? (avgVal / yMax) * 100 : 0;
-  const avgLabelText = granularity === "week" ? `avg / week` : `avg / day`;
-  const avgLineHTML = avgVal > 0 ? `
-    <div class="daily-avg-line" style="bottom:${avgPctFromBottom}%;">
-      <span class="daily-avg-label">${fmtVal(avgVal)}${unitLabel} ${avgLabelText}</span>
-    </div>
-  ` : "";
-
-  return `
-    <div>
-      <div class="chart-header">
-        <div class="weekly-chart-label">${chartTitle}</div>
-        <div class="metric-toggle">
-          <button class="metric-btn ${isMin ? "active" : ""}" data-metric="minutes">MIN</button>
-          <button class="metric-btn ${!isMin ? "active" : ""}" data-metric="calories">CAL</button>
-        </div>
-      </div>
-      <div class="daily-chart ${dense ? "dense" : ""}">
-        <div class="daily-y-axis">${yAxisHTML}</div>
-        <div class="daily-grid">${gridHTML}${avgLineHTML}</div>
-        <div class="daily-bars">
-          ${buckets.map(b => {
-            const stackHeight = b.total > 0 ? (b.total / yMax) * chartHeight : 0;
-            const segments = DISCIPLINES.filter(d => b.totals[d] > 0).map(d => {
-              const segPct = (b.totals[d] / b.total) * 100;
-              return `<div class="daily-bar-seg" title="${d}: ${fmtVal(b.totals[d])}${unitLabel}" style="height:${segPct}%; background:${DISCIPLINE_CONFIG[d].color};"></div>`;
-            }).join("");
-            const cls = [b.isWeekend ? "weekend" : "", b.isToday ? "today" : ""].filter(Boolean).join(" ");
-            return `
-              <div class="daily-bar-col" title="${fmtVal(b.total)}${unitLabel}">
-                <div class="daily-bar-stack" style="height:${stackHeight}px;">${segments}</div>
-                <div class="daily-bar-label ${cls}">
-                  <span class="dow">${b.label.top}</span>
-                  <span class="dom">${b.label.bot}</span>
-                </div>
-              </div>
-            `;
-          }).join("")}
-        </div>
-      </div>
-      <div class="weekly-legend">
-        ${DISCIPLINES.map(d => `
-          <div class="weekly-legend-item">
-            <div class="weekly-legend-swatch" style="background:${DISCIPLINE_CONFIG[d].color};"></div>
-            ${d}
-          </div>
-        `).join("")}
-      </div>
-    </div>
-  `;
-}
-
-function renderDisciplineStats(discipline) {
-  const ds = state.sessions.filter(s => s.discipline === discipline);
-  if (ds.length === 0) return `<div class="empty-state">No ${discipline.toLowerCase()} sessions yet.</div>`;
-
-  const cfg = DISCIPLINE_CONFIG[discipline];
-  const totalDist = ds.filter(s => s.data.distance).reduce((a, b) => a + Number(b.data.distance), 0);
-  const totalDur = ds.filter(s => s.data.duration).reduce((a, b) => a + Number(b.data.duration), 0);
-  const totalCal = ds.filter(s => s.data.calories).reduce((a, b) => a + Number(b.data.calories), 0);
-
-  const cards = [
-    { value: ds.length, label: "Sessions" },
-    totalDist > 0 ? { value: totalDist.toFixed(1) + "km", label: "Total Distance" } : null,
-    totalDur > 0 ? { value: Math.round(totalDur) + "m", label: "Total Time" } : null,
-    totalCal > 0 ? { value: Math.round(totalCal).toLocaleString(), label: "Total kcal" } : null,
-  ].filter(Boolean);
-
-  return `
-    <div class="stats-grid">
-      ${cards.map(c => `
-        <div class="stat-card">
-          <div class="stat-value" style="color:${cfg.color};">${c.value}</div>
-          <div class="stat-label">${c.label}</div>
-        </div>
-      `).join("")}
-    </div>
-    <div class="history-list">
-      ${ds.slice().reverse().slice(0, 50).map(s => {
-        if (s.id === state.editingId) return renderHistoryEdit(s, cfg);
-        const fieldHtml = cfg.fields.filter(f => s.data[f.key]).map(f => {
-          const unit = f.key === "distance" ? "km"
-            : f.key === "duration" ? "m"
-            : f.key === "totalSets" ? " sets"
-            : f.key === "calories" ? " kcal"
-            : f.key === "avgSpeed" ? " km/h"
-            : "";
-          const labelShort = f.key === "type" ? "" : f.label.split(" ")[0];
-          return `<div class="history-field">${labelShort ? `<span class="history-field-label">${labelShort}</span>` : ""}${escapeHtml(s.data[f.key])}${unit}</div>`;
-        }).join("");
-        return `
-          <div class="history-item" data-edit="${s.id}" style="border-left-color:${cfg.color};">
-            <button class="history-delete" data-delete="${s.id}" aria-label="Delete session">×</button>
-            <div class="history-item-top">
-              <div class="history-date">${formatDate(s.date)}</div>
-            </div>
-            <div class="history-data">${fieldHtml}</div>
-          </div>
-        `;
-      }).join("")}
-    </div>
-  `;
-}
-
-function renderHistoryEdit(s, cfg) {
-  return `
-    <div class="history-item editing" style="border-left-color:${cfg.color};">
-      <div class="history-item-top">
-        <div class="history-date" style="color:#fff; font-weight:500;">EDITING · ${cfg.icon} ${s.discipline}</div>
-      </div>
-      <div class="history-edit">
-        <div class="history-edit-field">
-          <label class="history-edit-field-label">Date</label>
-          <input class="input" type="date" data-edit-field="__date" value="${escapeHtml(s.date)}">
-        </div>
-        ${cfg.fields.map(f => {
-          const isNumber = f.type === "number";
-          const allowsDecimal = isNumber && !!f.step;
-          const actualType = isNumber ? "text" : f.type;
-          const inputmode = isNumber ? (allowsDecimal ? "decimal" : "numeric") : "";
-          return `
-            <div class="history-edit-field">
-              <label class="history-edit-field-label">${f.label.toUpperCase()}</label>
-              <input class="input" type="${actualType}"
-                ${inputmode ? `inputmode="${inputmode}"` : ""}
-                autocomplete="off" autocorrect="off" spellcheck="false"
-                placeholder="${escapeHtml(f.placeholder || "")}"
-                value="${escapeHtml(s.data[f.key] || "")}"
-                data-edit-field="${f.key}">
-            </div>
-          `;
-        }).join("")}
-        <div class="history-edit-actions">
-          <button type="button" class="history-edit-cancel" data-edit-cancel>CANCEL</button>
-          <button type="button" class="history-edit-save" data-edit-save="${s.id}">SAVE</button>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-// ---------- Handlers ----------
-function attachHandlers() {
-  document.querySelectorAll("[data-view]").forEach(b => {
-    b.addEventListener("click", () => { state.view = b.dataset.view; render(); });
-  });
-  document.querySelectorAll("[data-discipline]").forEach(b => {
-    b.addEventListener("click", () => {
-      state.activeDiscipline = b.dataset.discipline;
-      state.form = emptyForm(state.activeDiscipline);
-      render();
-    });
-  });
-  document.querySelectorAll("[data-history-tab]").forEach(b => {
-    b.addEventListener("click", () => { state.historyTab = b.dataset.historyTab; render(); });
-  });
-  document.querySelectorAll("[data-range]").forEach(b => {
-    b.addEventListener("click", () => { state.historyRange = b.dataset.range; render(); });
-  });
-  document.querySelectorAll("[data-metric]").forEach(b => {
-    b.addEventListener("click", () => { state.historyMetric = b.dataset.metric; render(); });
-  });
-  document.querySelectorAll("[data-field]").forEach(input => {
-    input.addEventListener("input", e => {
-      let val = e.target.value;
-      const im = input.getAttribute("inputmode");
-      // Normalize: iOS sometimes shows comma instead of period on decimal keypad
-      if (im === "decimal" && val.includes(",")) {
-        val = val.replace(/,/g, ".");
-        e.target.value = val;
-      }
-      state.form[input.dataset.field] = val;
-      // Re-render only if a hint needs to update or RPE preview changes
-      const key = input.dataset.field;
-      if (key === "distance" || key === "duration" || key === "avgSplit") {
-        // Preserve focus
-        const focused = document.activeElement.dataset?.field;
-        const selStart = document.activeElement.selectionStart;
-        render();
-        if (focused) {
-          const el = document.querySelector(`[data-field="${focused}"]`);
-          if (el) { el.focus(); try { el.setSelectionRange(selStart, selStart); } catch {} }
-        }
-      }
-    });
-  });
-  const dateInput = document.getElementById("dateInput");
-  if (dateInput) dateInput.addEventListener("change", e => {
-    if (e.target.value) { state.date = e.target.value; render(); }
-  });
-  document.querySelectorAll("[data-date-step]").forEach(b => {
-    b.addEventListener("click", () => {
-      const n = parseInt(b.dataset.dateStep, 10) || 0;
-      const d = parseLocalISO(state.date);
-      d.setDate(d.getDate() + n);
-      state.date = localISO(d);
-      render();
-    });
-  });
-
-  const saveBtn = document.getElementById("saveBtn");
-  if (saveBtn) saveBtn.addEventListener("click", handleSave);
-
-  // Auto-fill computed hints when tapped
-  document.querySelectorAll(".computed-hint").forEach(hint => {
-    hint.addEventListener("click", () => {
-      const cfg = DISCIPLINE_CONFIG[state.activeDiscipline];
-      if (cfg.fields.find(f => f.key === "pace") && !state.form.pace) {
-        state.form.pace = autoPace(state.form.distance, state.form.duration);
-      }
-      if (cfg.fields.find(f => f.key === "avgSplit") && !state.form.avgSplit) {
-        state.form.avgSplit = autoSplit(state.form.distance, state.form.duration);
-      }
-      if (cfg.fields.find(f => f.key === "avgSpeed") && !state.form.avgSpeed) {
-        state.form.avgSpeed = autoSpeed(state.form.distance, state.form.duration);
-      }
-      if (cfg.fields.find(f => f.key === "calories") && !state.form.calories) {
-        state.form.calories = calcCalories(state.activeDiscipline, state.form.duration, state.form.distance, state.form.avgSplit);
-      }
-      render();
-    });
-  });
-
-  // Delete buttons (stop propagation so they don't trigger the row's edit click)
-  document.querySelectorAll("[data-delete]").forEach(btn => {
-    btn.addEventListener("click", e => {
-      e.stopPropagation();
-      const id = btn.dataset.delete;
-      if (!confirm("Delete this session?")) return;
-      state.sessions = state.sessions.filter(s => String(s.id) !== String(id));
-      saveSessions();
-      render();
-      showToast("Session deleted");
-    });
-  });
-
-  // Tap a history row to enter edit mode
-  document.querySelectorAll("[data-edit]").forEach(row => {
-    row.addEventListener("click", () => {
-      state.editingId = row.dataset.edit;
-      render();
-    });
-  });
-  // Cancel edit
-  document.querySelectorAll("[data-edit-cancel]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      state.editingId = null;
-      render();
-    });
-  });
-  // Save edit — collect the values from the inline inputs, write back to the
-  // session, persist, then exit edit mode.
-  document.querySelectorAll("[data-edit-save]").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const id = btn.dataset.editSave;
-      const session = state.sessions.find(s => String(s.id) === String(id));
-      if (!session) { state.editingId = null; render(); return; }
-      const inputs = document.querySelectorAll("[data-edit-field]");
-      inputs.forEach(inp => {
-        const k = inp.dataset.editField;
-        let v = inp.value;
-        // iOS comma -> period normalization for decimal fields
-        if (inp.getAttribute("inputmode") === "decimal" && v.includes(",")) v = v.replace(/,/g, ".");
-        if (k === "__date") {
-          if (v) session.date = v;
-        } else {
-          session.data[k] = v;
-        }
-      });
-      saveSessions();
-      state.editingId = null;
-      render();
-      showToast("Session updated");
-    });
-  });
-
-  // Menu
-  const openMenu = document.getElementById("openMenu");
-  if (openMenu) openMenu.addEventListener("click", () => {
-    document.getElementById("weightDisplay").textContent = state.weight + "kg";
-    document.getElementById("menuSheet").classList.add("open");
-  });
-}
-
-function handleSave() {
-  const hasData = Object.values(state.form).some(v => v !== "");
-  if (!hasData) {
-    showToast("Add at least one value");
-    return;
-  }
-  // Auto-fill computed fields if blank but inputs present
-  const cfg = DISCIPLINE_CONFIG[state.activeDiscipline];
-  if (cfg.fields.find(f => f.key === "pace") && !state.form.pace) {
-    const p = autoPace(state.form.distance, state.form.duration);
-    if (p) state.form.pace = p;
-  }
-  if (cfg.fields.find(f => f.key === "avgSplit") && !state.form.avgSplit) {
-    const p = autoSplit(state.form.distance, state.form.duration);
-    if (p) state.form.avgSplit = p;
-  }
-  if (cfg.fields.find(f => f.key === "avgSpeed") && !state.form.avgSpeed) {
-    const s = autoSpeed(state.form.distance, state.form.duration);
-    if (s) state.form.avgSpeed = s;
-  }
-  if (cfg.fields.find(f => f.key === "calories") && !state.form.calories) {
-    const c = calcCalories(state.activeDiscipline, state.form.duration, state.form.distance, state.form.avgSplit);
-    if (c) state.form.calories = c;
-  }
-  const session = { id: uid(), date: state.date, discipline: state.activeDiscipline, data: { ...state.form } };
-  state.sessions.push(session);
-  saveSessions();
-  state.form = emptyForm(state.activeDiscipline);
-  state.saved = true;
-  render();
-  setTimeout(() => { state.saved = false; render(); }, 2000);
-}
-
-// ---------- Menu / Import / Export ----------
-function setupMenu() {
-  const sheet = document.getElementById("menuSheet");
-  document.getElementById("closeMenuBtn").addEventListener("click", () => sheet.classList.remove("open"));
-  sheet.addEventListener("click", e => { if (e.target === sheet) sheet.classList.remove("open"); });
-
-  document.getElementById("settingsBtn").addEventListener("click", () => {
-    const newWeight = prompt(`Bodyweight in kg (used for calorie estimates):`, state.weight);
-    if (newWeight !== null) {
-      const w = parseFloat(String(newWeight).replace(",", "."));
-      if (!isNaN(w) && w > 0 && w < 500) {
-        state.weight = w;
-        saveSettings();
-        showToast(`Bodyweight set to ${w}kg`);
-      } else {
-        alert("Please enter a valid weight in kg.");
-      }
-    }
-    sheet.classList.remove("open");
-  });
-  document.getElementById("exportBtn").addEventListener("click", () => {
-    download("training-log.json", JSON.stringify(state.sessions, null, 2), "application/json");
-    sheet.classList.remove("open");
-  });
-  document.getElementById("exportCsvBtn").addEventListener("click", () => {
-    download("training-log.csv", toCsv(state.sessions), "text/csv");
-    sheet.classList.remove("open");
-  });
-  document.getElementById("importBtn").addEventListener("click", () => {
-    document.getElementById("importFile").click();
-  });
-  document.getElementById("importFile").addEventListener("change", e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const data = JSON.parse(reader.result);
-        if (!Array.isArray(data)) throw new Error("Not an array");
-        const confirmMsg = `Import ${data.length} sessions? This will REPLACE your current ${state.sessions.length} sessions.`;
-        if (confirm(confirmMsg)) {
-          state.sessions = data;
-          saveSessions();
-          render();
-          showToast(`Imported ${data.length} sessions`);
-        }
-      } catch (err) {
-        alert("Invalid JSON file: " + err.message);
-      }
-      e.target.value = "";
-      sheet.classList.remove("open");
-    };
-    reader.readAsText(file);
-  });
-  document.getElementById("clearBtn").addEventListener("click", () => {
-    if (confirm(`Delete ALL ${state.sessions.length} sessions? This cannot be undone.`)) {
-      if (confirm("Are you really sure? Export a backup first if you might want it back.")) {
-        state.sessions = [];
-        saveSessions();
-        render();
-        showToast("All data cleared");
-      }
-    }
-    sheet.classList.remove("open");
-  });
-}
-
-function toCsv(sessions) {
-  const headers = ["id","date","discipline","type","distance","duration","calories","pace","avgSplit","avgSpeed","totalSets","topLift"];
-  const rows = [headers.join(",")];
-  sessions.forEach(s => {
-    const row = headers.map(h => {
-      let v = h === "id" || h === "date" || h === "discipline" ? s[h] : s.data?.[h] ?? "";
-      v = String(v ?? "");
-      if (v.includes(",") || v.includes("\"") || v.includes("\n")) {
-        v = '"' + v.replace(/"/g, '""') + '"';
-      }
-      return v;
-    });
-    rows.push(row.join(","));
-  });
-  return rows.join("\n");
-}
-
-function download(filename, content, mime) {
-  const blob = new Blob([content], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-function showToast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 2000);
-}
-
-// ---------- Boot ----------
-loadSettings();
-loadSessions();
-render();
-setupMenu();
+function openSheet(title,html,cb){document.getElementById('sheet-title').textContent=title;document.getElementById('sheet-body').innerHTML=html;sheetCb=cb;document.getElementById('esheet').classList.add('open');document.getElementById('ebdrop').classList.add('open');document.getElementById('sheet-save').onclick=()=>{if(sheetCb)sheetCb();closeSheet();};setTimeout(()=>{const f=document.querySelector('#sheet-body input,#sheet-body textarea');if(f)f.focus();},120);}
+function closeSheet(){document.getElementById('esheet').classList.remove('open');document.getElementById('ebdrop').classList.remove('open');sheetCb=null;}
 </script>
 </body>
 </html>
