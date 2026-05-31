@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="List it">
-<meta name="version" content="1.0">
+<meta name="version" content="1.1">
 <meta name="theme-color" content="#2433B0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -184,6 +184,13 @@ button,input,select,textarea{font-family:inherit}
 </div>
 </div>
 
+<div id="spick" style="display:none;position:fixed;inset:0;z-index:250;background:rgba(15,20,60,0.5)" onclick="closeStatus()">
+  <div style="position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:22px 22px 0 0;padding:20px 18px max(env(safe-area-inset-bottom),28px)" onclick="event.stopPropagation()">
+    <div style="width:36px;height:4px;background:#E0E3EE;border-radius:2px;margin:0 auto 16px"></div>
+    <div style="font-size:17px;font-weight:700;color:#1A1E5C;margin-bottom:14px">Update status</div>
+    <div id="spick-opts"></div>
+  </div>
+</div>
 <div id="ebdrop" onclick="closeSheet()"></div>
 <div id="esheet">
   <div class="sheet-handle"></div>
@@ -205,7 +212,7 @@ button,input,select,textarea{font-family:inherit}
       <div class="user-chip-dot" id="chip-dot"></div>
       <span class="user-chip-name" id="chip-name"></span>
     </div>
-    <span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:500;letter-spacing:0.03em">v1.0</span>
+    <span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:500;letter-spacing:0.03em">v1.1</span>
   </div>
   <div class="tab-bar" id="tab-bar">
     <button class="tab-btn ag" id="tb-grocery" onclick="goSec('grocery',this)"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Grocery</button>
@@ -344,14 +351,15 @@ function rWatch(){
   if(!items.length){el.innerHTML='<div class="empty"><div class="empty-icon">🎬</div><div class="empty-text">Nothing to watch yet</div></div>';return;}
   const ord=['watching','towatch','watched'];
   items.sort((a,b)=>{const sa=ord.indexOf(a[1].status||'towatch'),sb=ord.indexOf(b[1].status||'towatch');return sa!==sb?sa-sb:(b[1].at||0)-(a[1].at||0);});
-  el.innerHTML=items.map(([id,it])=>{const st=it.status||'towatch';const adv=st==='towatch'?'→ Watching':st==='watching'?'→ Watched':'';const bck=st==='towatch'?'Delete ←':st==='watching'?'To watch ←':'Watching ←';
-    return `<div class="sw-wrap"><div class="sw-bg r">${adv}</div><div class="sw-bg l">${bck}</div><div class="sw-content item" id="swc-${id}"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div><div class="item-body"><div class="item-name">${esc(it.title)}</div><div class="item-sub"><span class="pill p-tag">${it.type==='tv'?'TV':'Movie'}</span><span class="pill p-tag">${GLBL[it.genre]||it.genre}</span>${it.platform?`<span class="pill p-tag">${esc(it.platform)}</span>`:''}<span class="pill p-${st}">${WLBL[st]}</span></div></div><div class="act-row"><button class="act-b ew" onclick="editWatch('${id}')">✎</button><button class="act-b del" onclick="rm('watch','${id}')">✕</button></div></div></div>`;
+  el.innerHTML=items.map(([id,it])=>{const st=it.status||'towatch';
+    return `<div class="item" id="wi-${id}" style="user-select:none"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div><div class="item-body"><div class="item-name">${esc(it.title)}</div><div class="item-sub"><span class="pill p-tag">${it.type==='tv'?'TV':'Movie'}</span><span class="pill p-tag">${GLBL[it.genre]||it.genre}</span>${it.platform?`<span class="pill p-tag">${esc(it.platform)}</span>`:''}<span class="pill p-${st}" style="cursor:pointer" onclick="pickStatus('${id}')">${WLBL[st]}</span></div></div><div class="act-row"><button class="act-b ew" onclick="editWatch('${id}')">✎</button><button class="act-b del" onclick="rm('watch','${id}')">✕</button></div></div>`;
   }).join('');
-  items.forEach(([id])=>addSwipe(id));
+  items.forEach(([id])=>addLongPress(id));
 }
-function advWatch(id){const it=live.watch[id];if(!it)return;const ord=['towatch','watching','watched'],i=ord.indexOf(it.status||'towatch');if(i<2)dbSet(`watch/${id}/status`,ord[i+1]);}
-function regWatch(id){const it=live.watch[id];if(!it)return;const ord=['towatch','watching','watched'],i=ord.indexOf(it.status||'towatch');if(i>0)dbSet(`watch/${id}/status`,ord[i-1]);else rm('watch',id);}
-function addSwipe(id){const el=document.getElementById('swc-'+id);if(!el)return;let sx=0,sy=0,active=false;el.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;active=true;el.style.transition='none';},{passive:true});el.addEventListener('touchmove',e=>{if(!active)return;const dx=e.touches[0].clientX-sx,dy=e.touches[0].clientY-sy;if(Math.abs(dy)>Math.abs(dx)+8){active=false;return;}e.preventDefault();el.style.transform=`translateX(${dx}px)`;},{passive:false});el.addEventListener('touchend',e=>{if(!active)return;active=false;const dx=e.changedTouches[0].clientX-sx;el.style.transition='transform 0.2s ease';el.style.transform='translateX(0)';if(dx>72)advWatch(id);else if(dx<-72)regWatch(id);});}
+function addLongPress(id){const el=document.getElementById('wi-'+id);if(!el)return;let t;el.addEventListener('touchstart',()=>{t=setTimeout(()=>{if(navigator.vibrate)navigator.vibrate(40);pickStatus(id);},600);},{passive:true});el.addEventListener('touchend',()=>clearTimeout(t),{passive:true});el.addEventListener('touchmove',()=>clearTimeout(t),{passive:true});}
+function pickStatus(id){const it=live.watch[id];if(!it)return;const cur=it.status||'towatch';document.getElementById('spick-opts').innerHTML=[['towatch','📋','To Watch'],['watching','▶️','Watching'],['watched','✅','Watched']].map(([s,ic,lb])=>`<button onclick="setWatchStatus('${id}','${s}')" style="width:100%;text-align:left;padding:14px 16px;border-radius:12px;border:2px solid ${cur===s?'#5B21B6':'#E8EAF0'};background:${cur===s?'#F3EEFF':'#fff'};color:${cur===s?'#5B21B6':'#1A1E5C'};font-size:16px;font-weight:600;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;gap:10px"><span>${ic}</span>${lb}</button>`).join('');document.getElementById('spick').style.display='block';}
+function setWatchStatus(id,status){dbSet(`watch/${id}/status`,status);closeStatus();}
+function closeStatus(){document.getElementById('spick').style.display='none';}
 function editWatch(id){const it=live.watch[id];openSheet('Edit',`<input class="efield" id="ef-t" value="${esc(it.title)}" placeholder="Title"><select class="efield" id="ef-tp"><option value="tv"${it.type==='tv'?' selected':''}>TV show</option><option value="movie"${it.type==='movie'?' selected':''}>Movie</option></select><select class="efield" id="ef-g">${['comedy','drama','thriller','horror','action','documentary','other'].map(g=>`<option value="${g}"${it.genre===g?' selected':''}>${GLBL[g]}</option>`).join('')}</select><select class="efield" id="ef-p"><option value="">No platform</option>${['Netflix','Disney+','Stan','Binge','Paramount+','HBO','Apple TV+','Prime','Cinema','Other'].map(p=>`<option value="${p}"${it.platform===p?' selected':''}>${p}</option>`).join('')}</select><select class="efield" id="ef-s">${['towatch','watching','watched'].map(s=>`<option value="${s}"${(it.status||'towatch')===s?' selected':''}>${WLBL[s]}</option>`).join('')}</select>`,()=>{const t=document.getElementById('ef-t').value.trim();if(!t)return;dbSet(`watch/${id}/title`,t);dbSet(`watch/${id}/type`,document.getElementById('ef-tp').value);dbSet(`watch/${id}/genre`,document.getElementById('ef-g').value);dbSet(`watch/${id}/platform`,document.getElementById('ef-p').value);dbSet(`watch/${id}/status`,document.getElementById('ef-s').value);});}
 
 function addTodo(){const el=document.getElementById('ti'),t=el.value.trim();if(!t)return;dbNew('todo',{text:t,priority:document.getElementById('t-pri').value,by:me,at:Date.now()});el.value='';el.focus();}
