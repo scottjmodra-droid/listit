@@ -174,6 +174,16 @@ button,input,select,textarea{font-family:inherit}
 </div>
 </div>
 
+<div id="pw-overlay" class="overlay" style="display:none">
+<div class="overlay-card">
+  <h2>🔒 List it</h2>
+  <p style="margin-bottom:18px">Enter the password to continue.</p>
+  <input class="efield" id="pw-input" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')submitPw()" style="margin-bottom:8px">
+  <div id="pw-err" style="font-size:13px;color:#E0355A;margin-bottom:10px;display:none">Wrong password — try again</div>
+  <button class="primary-btn" onclick="submitPw()">Enter →</button>
+</div>
+</div>
+
 <div id="user-overlay" class="overlay" style="display:none">
 <div class="overlay-card">
   <h2>Who are you?</h2>
@@ -212,7 +222,7 @@ button,input,select,textarea{font-family:inherit}
       <div class="user-chip-dot" id="chip-dot"></div>
       <span class="user-chip-name" id="chip-name"></span>
     </div>
-    <span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:500;letter-spacing:0.03em">v1.1</span>
+    <span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:500;letter-spacing:0.03em">v1.2</span>
   </div>
   <div class="tab-bar" id="tab-bar">
     <button class="tab-btn ag" id="tb-grocery" onclick="goSec('grocery',this)"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Grocery</button>
@@ -290,7 +300,12 @@ let me=localStorage.getItem('listit_user'),db=null,live={grocery:{},watch:{},tod
 
 const FIREBASE_CFG={apiKey:"AIzaSyB5-IGWXIC2ADnqSY0skG2-4inuKK9RBjE",authDomain:"list-it-42be0.firebaseapp.com",databaseURL:"https://list-it-42be0-default-rtdb.firebaseio.com",projectId:"list-it-42be0",storageBucket:"list-it-42be0.firebasestorage.app",messagingSenderId:"54931131581",appId:"1:54931131581:web:3d6dad84545da89e6f7bd4"};
 
-window.onload=()=>{initFirebase(FIREBASE_CFG);};
+const PW='cindy';
+window.onload=()=>{
+  if(!localStorage.getItem('listit_auth')){document.getElementById('pw-overlay').style.display='flex';setTimeout(()=>{const f=document.getElementById('pw-input');if(f)f.focus();},120);}
+  else initFirebase(FIREBASE_CFG);
+};
+function submitPw(){const v=document.getElementById('pw-input').value.trim().toLowerCase();if(v===PW){localStorage.setItem('listit_auth','1');hide('pw-overlay');initFirebase(FIREBASE_CFG);}else{document.getElementById('pw-err').style.display='block';document.getElementById('pw-input').value='';document.getElementById('pw-input').focus();}}
 function hide(id){document.getElementById(id).style.display='none';}
 
 function initFirebase(cfg){
