@@ -113,6 +113,8 @@ button,input,select,textarea{font-family:inherit}
 .fbar::-webkit-scrollbar{display:none}
 .fchip{padding:6px 13px;border-radius:99px;border:1.5px solid #DDE0EC;background:#fff;font-size:13px;color:#6B7280;cursor:pointer;white-space:nowrap;flex-shrink:0;font-weight:500}
 .fchip.on{border-color:#5B21B6;background:#5B21B6;color:#fff}
+.fchip.on.t{border-color:#065F46;background:#065F46;color:#fff}
+.who-init{font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;flex-shrink:0;letter-spacing:0.03em}
 .clear-btn{width:100%;padding:12px;border:1.5px solid #E0355A;border-radius:12px;background:#fff;color:#E0355A;font-size:14px;font-weight:600;cursor:pointer;margin-top:6px}
 .clear-btn:active{background:#FFF1F2}
 .sw-wrap{border-radius:14px;margin-bottom:7px;position:relative;overflow:hidden}
@@ -222,7 +224,7 @@ button,input,select,textarea{font-family:inherit}
       <div class="user-chip-dot" id="chip-dot"></div>
       <span class="user-chip-name" id="chip-name"></span>
     </div>
-    <span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:500;letter-spacing:0.03em">v1.2</span>
+    <span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:500;letter-spacing:0.03em">v1.3</span>
   </div>
   <div class="tab-bar" id="tab-bar">
     <button class="tab-btn ag" id="tb-grocery" onclick="goSec('grocery',this)"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Grocery</button>
@@ -275,6 +277,11 @@ button,input,select,textarea{font-family:inherit}
         <div class="add-row"><input class="add-input" id="ti" placeholder="Something to buy or do…" onkeydown="if(event.key==='Enter')addTodo()"><button class="add-btn t" onclick="addTodo()">+</button></div>
         <div class="add-extras"><select class="add-select" id="t-pri"><option value="now">Now</option><option value="soon" selected>Soon</option><option value="later">Later</option></select></div>
       </div>
+      <div class="fbar" id="tfilters">
+        <div class="fchip on t" data-tf="both" onclick="tf(this,'both')">Both</div>
+        <div class="fchip t" data-tf="scott" onclick="tf(this,'scott')">Scott</div>
+        <div class="fchip t" data-tf="leigh" onclick="tf(this,'leigh')">Leigh</div>
+      </div>
       <div id="todo-list"></div>
     </div>
   </div>
@@ -296,7 +303,7 @@ const CORD=['produce','meatdairy','other'];
 const CLBL={produce:'Fruit / Veg',meatdairy:'Meat & Dairy',other:'Other'};
 const PLBL={now:'Now',soon:'Soon',later:'Later'},WLBL={towatch:'To watch',watching:'Watching',watched:'Watched'},GLBL={comedy:'Comedy',drama:'Drama',thriller:'Thriller',horror:'Horror',action:'Action',documentary:'Doco',other:'Other'};
 const SMETA={grocery:{title:'Grocery',bar:'bg-grocery',na:'ag'},watch:{title:'To Watch',bar:'bg-watch',na:'aw'},todo:{title:'Buy / Do',bar:'bg-todo',na:'at'},shared:{title:'Shared',bar:'bg-shared',na:'as'}};
-let me=localStorage.getItem('listit_user'),db=null,live={grocery:{},watch:{},todo:{},shared:{}},wFilters=new Set(['all']),undoData=null,undoTimer=null,sheetCb=null;
+let me=localStorage.getItem('listit_user'),db=null,live={grocery:{},watch:{},todo:{},shared:{}},wFilters=new Set(['all']),todoWhoFilter='both',undoData=null,undoTimer=null,sheetCb=null;
 
 const FIREBASE_CFG={apiKey:"AIzaSyB5-IGWXIC2ADnqSY0skG2-4inuKK9RBjE",authDomain:"list-it-42be0.firebaseapp.com",databaseURL:"https://list-it-42be0-default-rtdb.firebaseio.com",projectId:"list-it-42be0",storageBucket:"list-it-42be0.firebasestorage.app",messagingSenderId:"54931131581",appId:"1:54931131581:web:3d6dad84545da89e6f7bd4"};
 
@@ -377,8 +384,22 @@ function setWatchStatus(id,status){dbSet(`watch/${id}/status`,status);closeStatu
 function closeStatus(){document.getElementById('spick').style.display='none';}
 function editWatch(id){const it=live.watch[id];openSheet('Edit',`<input class="efield" id="ef-t" value="${esc(it.title)}" placeholder="Title"><select class="efield" id="ef-tp"><option value="tv"${it.type==='tv'?' selected':''}>TV show</option><option value="movie"${it.type==='movie'?' selected':''}>Movie</option></select><select class="efield" id="ef-g">${['comedy','drama','thriller','horror','action','documentary','other'].map(g=>`<option value="${g}"${it.genre===g?' selected':''}>${GLBL[g]}</option>`).join('')}</select><select class="efield" id="ef-p"><option value="">No platform</option>${['Netflix','Disney+','Stan','Binge','Paramount+','HBO','Apple TV+','Prime','Cinema','Other'].map(p=>`<option value="${p}"${it.platform===p?' selected':''}>${p}</option>`).join('')}</select><select class="efield" id="ef-s">${['towatch','watching','watched'].map(s=>`<option value="${s}"${(it.status||'towatch')===s?' selected':''}>${WLBL[s]}</option>`).join('')}</select>`,()=>{const t=document.getElementById('ef-t').value.trim();if(!t)return;dbSet(`watch/${id}/title`,t);dbSet(`watch/${id}/type`,document.getElementById('ef-tp').value);dbSet(`watch/${id}/genre`,document.getElementById('ef-g').value);dbSet(`watch/${id}/platform`,document.getElementById('ef-p').value);dbSet(`watch/${id}/status`,document.getElementById('ef-s').value);});}
 
+function tf(chip,who){todoWhoFilter=who;document.querySelectorAll('#tfilters .fchip').forEach(c=>c.classList.remove('on'));chip.classList.add('on');rTodo();}
 function addTodo(){const el=document.getElementById('ti'),t=el.value.trim();if(!t)return;dbNew('todo',{text:t,priority:document.getElementById('t-pri').value,by:me,at:Date.now()});el.value='';el.focus();}
-function rTodo(){const items=Object.entries(live.todo||{}),el=document.getElementById('todo-list');if(!items.length){el.innerHTML='<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Nothing to buy or do</div></div>';return;}const po=['now','soon','later'];items.sort((a,b)=>{const pa=po.indexOf(a[1].priority||'soon'),pb=po.indexOf(b[1].priority||'soon');return pa!==pb?pa-pb:(a[1].at||0)-(b[1].at||0);});el.innerHTML=items.map(([id,it])=>`<div class="item"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div><div class="item-body"><div class="item-name">${esc(it.text)}</div></div><span class="pill p-${it.priority||'soon'}" style="cursor:pointer" onclick="cyclePri('${id}')">${PLBL[it.priority||'soon']}</span><div class="act-row"><button class="act-b et" onclick="editTodo('${id}')">✎</button><button class="act-b del" onclick="rm('todo','${id}')">✕</button></div></div>`).join('');}
+function rTodo(){
+  let items=Object.entries(live.todo||{});
+  const el=document.getElementById('todo-list');
+  if(todoWhoFilter!=='both')items=items.filter(([,it])=>(it.by||'')===todoWhoFilter);
+  if(!items.length){el.innerHTML='<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Nothing to buy or do</div></div>';return;}
+  const po=['now','soon','later'];
+  items.sort((a,b)=>{const pa=po.indexOf(a[1].priority||'soon'),pb=po.indexOf(b[1].priority||'soon');return pa!==pb?pa-pb:(a[1].at||0)-(b[1].at||0);});
+  el.innerHTML=items.map(([id,it])=>{
+    const ini=(it.by==='scott'?'S':it.by==='leigh'?'L':'?');
+    const col=UC[it.by]||'#C0C4D6';
+    const bg=it.by==='scott'?'#EEF0FF':it.by==='leigh'?'#FFF0F3':'#F3F4F6';
+    return `<div class="item"><div class="user-bar" style="background:${col}"></div><div class="item-body"><div class="item-name">${esc(it.text)}</div></div><span class="who-init" style="color:${col};background:${bg}">${ini}</span><span class="pill p-${it.priority||'soon'}" style="cursor:pointer" onclick="cyclePri('${id}')">${PLBL[it.priority||'soon']}</span><div class="act-row"><button class="act-b et" onclick="editTodo('${id}')">✎</button><button class="act-b del" onclick="rm('todo','${id}')">✕</button></div></div>`;
+  }).join('');
+}
 function cyclePri(id){const it=live.todo[id];if(!it)return;const po=['now','soon','later'],i=po.indexOf(it.priority||'soon');dbSet(`todo/${id}/priority`,po[(i+1)%3]);}
 function editTodo(id){const it=live.todo[id];openSheet('Edit',`<input class="efield" id="ef-tx" value="${esc(it.text)}" placeholder="Task"><select class="efield" id="ef-pr">${['now','soon','later'].map(p=>`<option value="${p}"${it.priority===p?' selected':''}>${PLBL[p]}</option>`).join('')}</select>`,()=>{const t=document.getElementById('ef-tx').value.trim(),p=document.getElementById('ef-pr').value;if(t){dbSet(`todo/${id}/text`,t);dbSet(`todo/${id}/priority`,p);}});}
 
