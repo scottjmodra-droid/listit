@@ -224,7 +224,7 @@ button,input,select,textarea{font-family:inherit}
       <div class="user-chip-dot" id="chip-dot"></div>
       <span class="user-chip-name" id="chip-name"></span>
     </div>
-    <span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:500;letter-spacing:0.03em">v1.3</span>
+    <span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:500;letter-spacing:0.03em">v1.4</span>
   </div>
   <div class="tab-bar" id="tab-bar">
     <button class="tab-btn ag" id="tb-grocery" onclick="goSec('grocery',this)"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Grocery</button>
@@ -275,7 +275,10 @@ button,input,select,textarea{font-family:inherit}
     <div class="section-scroll">
       <div class="add-area t">
         <div class="add-row"><input class="add-input" id="ti" placeholder="Something to buy or do…" onkeydown="if(event.key==='Enter')addTodo()"><button class="add-btn t" onclick="addTodo()">+</button></div>
-        <div class="add-extras"><select class="add-select" id="t-pri"><option value="now">Now</option><option value="soon" selected>Soon</option><option value="later">Later</option></select></div>
+        <div class="add-extras">
+          <select class="add-select" id="t-pri"><option value="now">Now</option><option value="soon" selected>Soon</option><option value="later">Later</option></select>
+          <select class="add-select" id="t-who"><option value="both" selected>Both</option><option value="scott">Scott</option><option value="leigh">Leigh</option></select>
+        </div>
       </div>
       <div class="fbar" id="tfilters">
         <div class="fchip on t" data-tf="both" onclick="tf(this,'both')">Both</div>
@@ -385,23 +388,24 @@ function closeStatus(){document.getElementById('spick').style.display='none';}
 function editWatch(id){const it=live.watch[id];openSheet('Edit',`<input class="efield" id="ef-t" value="${esc(it.title)}" placeholder="Title"><select class="efield" id="ef-tp"><option value="tv"${it.type==='tv'?' selected':''}>TV show</option><option value="movie"${it.type==='movie'?' selected':''}>Movie</option></select><select class="efield" id="ef-g">${['comedy','drama','thriller','horror','action','documentary','other'].map(g=>`<option value="${g}"${it.genre===g?' selected':''}>${GLBL[g]}</option>`).join('')}</select><select class="efield" id="ef-p"><option value="">No platform</option>${['Netflix','Disney+','Stan','Binge','Paramount+','HBO','Apple TV+','Prime','Cinema','Other'].map(p=>`<option value="${p}"${it.platform===p?' selected':''}>${p}</option>`).join('')}</select><select class="efield" id="ef-s">${['towatch','watching','watched'].map(s=>`<option value="${s}"${(it.status||'towatch')===s?' selected':''}>${WLBL[s]}</option>`).join('')}</select>`,()=>{const t=document.getElementById('ef-t').value.trim();if(!t)return;dbSet(`watch/${id}/title`,t);dbSet(`watch/${id}/type`,document.getElementById('ef-tp').value);dbSet(`watch/${id}/genre`,document.getElementById('ef-g').value);dbSet(`watch/${id}/platform`,document.getElementById('ef-p').value);dbSet(`watch/${id}/status`,document.getElementById('ef-s').value);});}
 
 function tf(chip,who){todoWhoFilter=who;document.querySelectorAll('#tfilters .fchip').forEach(c=>c.classList.remove('on'));chip.classList.add('on');rTodo();}
-function addTodo(){const el=document.getElementById('ti'),t=el.value.trim();if(!t)return;dbNew('todo',{text:t,priority:document.getElementById('t-pri').value,by:me,at:Date.now()});el.value='';el.focus();}
+function addTodo(){const el=document.getElementById('ti'),t=el.value.trim();if(!t)return;dbNew('todo',{text:t,priority:document.getElementById('t-pri').value,who:document.getElementById('t-who').value,by:me,at:Date.now()});el.value='';document.getElementById('t-who').value='both';el.focus();}
+function whobadge(who){
+  if(who==='scott')return`<span class="who-init" style="color:#2433B0;background:#EEF0FF">S</span>`;
+  if(who==='leigh')return`<span class="who-init" style="color:#E0355A;background:#FFF0F3">L</span>`;
+  return`<span class="who-init" style="color:#2433B0;background:#EEF0FF">S</span><span class="who-init" style="color:#E0355A;background:#FFF0F3;margin-left:2px">L</span>`;
+}
 function rTodo(){
   let items=Object.entries(live.todo||{});
   const el=document.getElementById('todo-list');
-  if(todoWhoFilter!=='both')items=items.filter(([,it])=>(it.by||'')===todoWhoFilter);
+  if(todoWhoFilter!=='both')items=items.filter(([,it])=>{const w=it.who||'both';return w===todoWhoFilter||w==='both';});
   if(!items.length){el.innerHTML='<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Nothing to buy or do</div></div>';return;}
   const po=['now','soon','later'];
   items.sort((a,b)=>{const pa=po.indexOf(a[1].priority||'soon'),pb=po.indexOf(b[1].priority||'soon');return pa!==pb?pa-pb:(a[1].at||0)-(b[1].at||0);});
-  el.innerHTML=items.map(([id,it])=>{
-    const ini=(it.by==='scott'?'S':it.by==='leigh'?'L':'?');
-    const col=UC[it.by]||'#C0C4D6';
-    const bg=it.by==='scott'?'#EEF0FF':it.by==='leigh'?'#FFF0F3':'#F3F4F6';
-    return `<div class="item"><div class="user-bar" style="background:${col}"></div><div class="item-body"><div class="item-name">${esc(it.text)}</div></div><span class="who-init" style="color:${col};background:${bg}">${ini}</span><span class="pill p-${it.priority||'soon'}" style="cursor:pointer" onclick="cyclePri('${id}')">${PLBL[it.priority||'soon']}</span><div class="act-row"><button class="act-b et" onclick="editTodo('${id}')">✎</button><button class="act-b del" onclick="rm('todo','${id}')">✕</button></div></div>`;
-  }).join('');
+  el.innerHTML=items.map(([id,it])=>`<div class="item"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div><div class="item-body"><div class="item-name">${esc(it.text)}</div></div><span style="display:flex;align-items:center;gap:0;flex-shrink:0;cursor:pointer" onclick="cycleWho('${id}')" title="Tap to change who">${whobadge(it.who||'both')}</span><span class="pill p-${it.priority||'soon'}" style="cursor:pointer" onclick="cyclePri('${id}')">${PLBL[it.priority||'soon']}</span><div class="act-row"><button class="act-b et" onclick="editTodo('${id}')">✎</button><button class="act-b del" onclick="rm('todo','${id}')">✕</button></div></div>`).join('');
 }
+function cycleWho(id){const it=live.todo[id];if(!it)return;const wo=['both','scott','leigh'],i=wo.indexOf(it.who||'both');dbSet(`todo/${id}/who`,wo[(i+1)%3]);}
 function cyclePri(id){const it=live.todo[id];if(!it)return;const po=['now','soon','later'],i=po.indexOf(it.priority||'soon');dbSet(`todo/${id}/priority`,po[(i+1)%3]);}
-function editTodo(id){const it=live.todo[id];openSheet('Edit',`<input class="efield" id="ef-tx" value="${esc(it.text)}" placeholder="Task"><select class="efield" id="ef-pr">${['now','soon','later'].map(p=>`<option value="${p}"${it.priority===p?' selected':''}>${PLBL[p]}</option>`).join('')}</select>`,()=>{const t=document.getElementById('ef-tx').value.trim(),p=document.getElementById('ef-pr').value;if(t){dbSet(`todo/${id}/text`,t);dbSet(`todo/${id}/priority`,p);}});}
+function editTodo(id){const it=live.todo[id];openSheet('Edit',`<input class="efield" id="ef-tx" value="${esc(it.text)}" placeholder="Task"><select class="efield" id="ef-pr">${['now','soon','later'].map(p=>`<option value="${p}"${it.priority===p?' selected':''}>${PLBL[p]}</option>`).join('')}</select><select class="efield" id="ef-wh"><option value="both"${(it.who||'both')==='both'?' selected':''}>Both</option><option value="scott"${it.who==='scott'?' selected':''}>Scott</option><option value="leigh"${it.who==='leigh'?' selected':''}>Leigh</option></select>`,()=>{const t=document.getElementById('ef-tx').value.trim(),p=document.getElementById('ef-pr').value,w=document.getElementById('ef-wh').value;if(t){dbSet(`todo/${id}/text`,t);dbSet(`todo/${id}/priority`,p);dbSet(`todo/${id}/who`,w);}});}
 
 function urlHint(u){try{const x=new URL(u),d=x.hostname.replace('www.',''),p=x.pathname.replace(/\/$/,'').split('/').filter(Boolean).slice(0,3).join(' › ');return d+(p?' · '+p:'');}catch(e){return '';}}
 function addShared(){const el=document.getElementById('si'),t=el.value.trim();if(!t)return;const isUrl=/^https?:\/\//i.test(t);dbNew('shared',{text:t,isUrl,hint:isUrl?urlHint(t):'',note:'',by:me,at:Date.now()});el.value='';el.focus();}
