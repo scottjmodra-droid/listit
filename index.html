@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="List it">
-<meta name="version" content="1.1">
+<meta name="version" content="1.8">
 <meta name="theme-color" content="#2433B0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -143,6 +143,30 @@ button,input,select,textarea{font-family:inherit}
 .link-hint{font-size:12px;color:#9CA3AF;margin-top:3px}
 #offline-bar{display:none;background:#F59E0B;color:#fff;text-align:center;font-size:12px;font-weight:600;padding:6px 14px;flex-shrink:0;letter-spacing:0.02em}
 #offline-bar.show{display:block}
+.top-bar.bg-cook{background:#EA580C}
+.t-cook .section-scroll{background:#FFF7ED}
+.t-cook .section-title{color:#EA580C}
+.tab-btn.ak{color:#EA580C}.tab-btn.ak::after{width:32px;background:#EA580C}
+.add-area.ck:focus-within{border-color:#EA580C}
+.add-btn.ck{background:#EA580C}
+.act-b.eck{color:#EA580C}
+.recipe-card{background:#fff;border-radius:14px;padding:12px;margin-bottom:7px;border:0.5px solid #E8EAF0;display:flex;gap:10px;align-items:flex-start;position:relative}
+.recipe-photo{width:68px;height:68px;border-radius:10px;object-fit:cover;flex-shrink:0;border:0.5px solid #E8EAF0}
+.recipe-photo-ph{width:68px;height:68px;border-radius:10px;background:#FFF7ED;border:0.5px solid #FFD9B3;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:26px}
+.recipe-body{flex:1;min-width:0}
+.recipe-name{font-size:15px;font-weight:600;color:#1A1E5C;line-height:1.3}
+.recipe-notes{font-size:13px;color:#9CA3AF;margin-top:3px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}
+.recipe-actions{display:flex;gap:4px;align-items:center;flex-shrink:0}
+.link-pill{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;background:#FFF7ED;border:none;cursor:pointer;font-size:16px;text-decoration:none;color:#EA580C;flex-shrink:0}
+.link-pill:active{transform:scale(0.9)}
+.photo-upload-btn{display:flex;align-items:center;justify-content:center;gap:4px;padding:7px 10px;border:1px solid #DDE0EC;border-radius:9px;font-size:13px;background:#F7F8FC;color:#6B7280;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.fav-strip{background:#EEF0FF;border-bottom:0.5px solid #c5caf0;padding:8px 12px;flex-shrink:0}
+.fav-strip-lbl{font-size:11px;color:#2433B0;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px}
+.fav-chips{display:flex;flex-wrap:wrap;gap:6px}
+.fav-chip{background:#2433B0;color:#fff;border:none;border-radius:16px;padding:5px 13px;font-size:13px;cursor:pointer;white-space:nowrap}
+.fav-chip:active{opacity:0.8;transform:scale(0.97)}
+.fav-btn{background:none;border:none;font-size:16px;cursor:pointer;padding:2px;line-height:1;flex-shrink:0;opacity:0.2}
+.fav-btn.on{opacity:1}
 </style>
 </head>
 <body>
@@ -227,10 +251,11 @@ button,input,select,textarea{font-family:inherit}
       <div class="user-chip-dot" id="chip-dot"></div>
       <span class="user-chip-name" id="chip-name"></span>
     </div>
-    <span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:500;letter-spacing:0.03em">v1.5</span>
+    <span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:500;letter-spacing:0.03em">v1.8</span>
   </div>
   <div class="tab-bar" id="tab-bar">
     <button class="tab-btn ag" id="tb-grocery" onclick="goSec('grocery',this)"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Grocery</button>
+    <button class="tab-btn" id="tb-cook" onclick="goSec('cook',this)"><svg viewBox="0 0 24 24"><path d="M3 2v7c0 1.1.9 2 2 2 1.1 0 2-.9 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3z"/><path d="M18 22v-3"/></svg>Cook</button>
     <button class="tab-btn" id="tb-watch" onclick="goSec('watch',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>Watch</button>
     <button class="tab-btn" id="tb-todo" onclick="goSec('todo',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Buy / Do</button>
     <button class="tab-btn" id="tb-shared" onclick="goSec('shared',this)"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Shared</button>
@@ -238,10 +263,26 @@ button,input,select,textarea{font-family:inherit}
 
   <div class="section-view active t-grocery" id="sv-grocery">
     <div class="section-header t-grocery"><div class="section-title">Grocery</div><div class="section-sub">Auto-sorted by aisle</div></div>
+    <div id="fav-strip" style="display:none"></div>
     <div class="section-scroll">
       <div class="add-area"><div class="add-row"><input class="add-input" id="gi" placeholder="Add item…" onkeydown="if(event.key==='Enter')addGrocery()"><button class="add-btn g" onclick="addGrocery()">+</button></div></div>
       <div id="grocery-list"></div>
       <button class="clear-btn" onclick="clearChecked()">Clear checked items</button>
+    </div>
+  </div>
+
+  <div class="section-view t-cook" id="sv-cook">
+    <div class="section-header t-cook"><div class="section-title">Cook</div><div class="section-sub">Tap 🔗 to open a recipe link</div></div>
+    <div class="section-scroll">
+      <div class="add-area ck">
+        <div class="add-row"><input class="add-input" id="ci" placeholder="Recipe name…" onkeydown="if(event.key==='Enter')addCook()"><button class="add-btn ck" onclick="addCook()">+</button></div>
+        <div class="add-extras" style="margin-top:8px">
+          <input class="add-select" id="ci-link" type="url" placeholder="Link (optional)" style="flex:2;min-width:100px">
+          <label class="photo-upload-btn">📷 <span id="cook-photo-lbl">Photo</span><input type="file" accept="image/*" style="display:none" id="cook-photo-input" onchange="onCookPhotoSelect(this)"></label>
+        </div>
+        <img id="cook-photo-prev" style="display:none;width:100%;max-height:110px;object-fit:cover;border-radius:10px;margin-top:8px">
+      </div>
+      <div id="cook-list"></div>
     </div>
   </div>
 
@@ -308,8 +349,8 @@ const CATS={produce:['apple','banana','orange','grape','strawberry','blueberry',
 const CORD=['produce','meatdairy','other'];
 const CLBL={produce:'Fruit / Veg',meatdairy:'Meat & Dairy',other:'Other'};
 const PLBL={now:'Now',soon:'Soon',later:'Later'},WLBL={towatch:'To watch',watching:'Watching',watched:'Watched'},GLBL={comedy:'Comedy',drama:'Drama',thriller:'Thriller',horror:'Horror',action:'Action',documentary:'Doco',other:'Other'};
-const SMETA={grocery:{title:'Grocery',bar:'bg-grocery',na:'ag'},watch:{title:'To Watch',bar:'bg-watch',na:'aw'},todo:{title:'Buy / Do',bar:'bg-todo',na:'at'},shared:{title:'Shared',bar:'bg-shared',na:'as'}};
-let me=localStorage.getItem('listit_user'),db=null,live={grocery:{},watch:{},todo:{},shared:{}},wFilters=new Set(['all']),todoWhoFilter='both',undoData=null,undoTimer=null,sheetCb=null;
+const SMETA={grocery:{title:'Grocery',bar:'bg-grocery',na:'ag'},cook:{title:'Cook',bar:'bg-cook',na:'ak'},watch:{title:'To Watch',bar:'bg-watch',na:'aw'},todo:{title:'Buy / Do',bar:'bg-todo',na:'at'},shared:{title:'Shared',bar:'bg-shared',na:'as'}};
+let me=localStorage.getItem('listit_user'),db=null,live={grocery:{},cook:{},watch:{},todo:{},shared:{},favourites:{}},wFilters=new Set(['all']),todoWhoFilter='both',undoData=null,undoTimer=null,sheetCb=null,pendingCookPhoto='';
 
 const FIREBASE_CFG={apiKey:"AIzaSyB5-IGWXIC2ADnqSY0skG2-4inuKK9RBjE",authDomain:"list-it-42be0.firebaseapp.com",databaseURL:"https://list-it-42be0-default-rtdb.firebaseio.com",projectId:"list-it-42be0",storageBucket:"list-it-42be0.firebasestorage.app",messagingSenderId:"54931131581",appId:"1:54931131581:web:3d6dad84545da89e6f7bd4"};
 
@@ -328,7 +369,7 @@ function initFirebase(cfg){
   setupListeners();
   if(!me){document.getElementById('user-overlay').style.display='flex';}else launchApp();
 }
-function renderAll(){['grocery','watch','todo','shared'].forEach(renderSec);}
+function renderAll(){['grocery','cook','watch','todo','shared'].forEach(renderSec);rFavStrip();}
 function pickUser(u){me=u;localStorage.setItem('listit_user',u);hide('user-overlay');launchApp();}
 function launchApp(){const a=document.getElementById('app');a.style.cssText='display:flex;flex-direction:column;height:100%';document.getElementById('chip-dot').style.background=UC[me];document.getElementById('chip-name').textContent=UN[me];addSectionSwipe();setAppIcon();}
 function genAppIcon(){
@@ -347,24 +388,34 @@ function addSectionSwipe(){const app=document.getElementById('app');let sx=0,sy=
 function switchUser(){const n=me==='scott'?'leigh':'scott';if(confirm('Switch to '+UN[n]+'?')){me=n;localStorage.setItem('listit_user',me);document.getElementById('chip-dot').style.background=UC[me];document.getElementById('chip-name').textContent=UN[me];}}
 
 function setupListeners(){
-  ['grocery','watch','todo','shared'].forEach(s=>{
+  ['grocery','cook','watch','todo','shared'].forEach(s=>{
     db.ref(s).on('value',snap=>{
       live[s]=snap.val()||{};
       try{const c=JSON.parse(localStorage.getItem('listit_cache')||'{}');c[s]=live[s];localStorage.setItem('listit_cache',JSON.stringify(c));}catch(e){}
       renderSec(s);
     });
   });
+  db.ref('favourites').on('value',snap=>{
+    live.favourites=snap.val()||{};
+    try{const c=JSON.parse(localStorage.getItem('listit_cache')||'{}');c.favourites=live.favourites;localStorage.setItem('listit_cache',JSON.stringify(c));}catch(e){}
+    rFavStrip();rGrocery();
+  });
 }
 function dbSet(p,v){db.ref(p).set(v);}
 function dbDel(p){db.ref(p).remove();}
 function dbNew(s,o){const id='i'+Date.now()+Math.random().toString(36).slice(2,5);db.ref(s+'/'+id).set(o);return id;}
-function renderSec(s){if(s==='grocery')rGrocery();else if(s==='watch')rWatch();else if(s==='todo')rTodo();else if(s==='shared')rShared();}
+function renderSec(s){if(s==='grocery')rGrocery();else if(s==='cook')rCook();else if(s==='watch')rWatch();else if(s==='todo')rTodo();else if(s==='shared')rShared();}
 
-const SECS=['grocery','watch','todo','shared'];let curSec=0;
+const SECS=['grocery','cook','watch','todo','shared'];let curSec=0;
 function goSec(name,btn){curSec=SECS.indexOf(name);document.querySelectorAll('.section-view').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(e=>{e.className='tab-btn';});document.getElementById('sv-'+name).classList.add('active');const m=SMETA[name];btn.classList.add(m.na);document.getElementById('top-bar').className='top-bar '+m.bar;document.getElementById('top-title').textContent=m.title;}
 
 const esc=s=>s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):'';
 function catOf(n){const l=n.toLowerCase();for(const[c,ks]of Object.entries(CATS)){if(ks.some(k=>l.includes(k)))return c;}return'other';}
+
+function favKey(n){return n.toLowerCase().trim().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').slice(0,64);}
+function toggleFav(name){const k=favKey(name);if(live.favourites&&live.favourites[k]!==undefined){dbDel('favourites/'+k);}else{dbSet('favourites/'+k,name);}}
+function addFavItem(name){dbNew('grocery',{name:name,qty:1,checked:false,cat:catOf(name),by:me,at:Date.now()});}
+function rFavStrip(){const favs=Object.entries(live.favourites||{});const el=document.getElementById('fav-strip');if(!el)return;if(!favs.length){el.style.display='none';return;}favs.sort((a,b)=>a[1].localeCompare(b[1]));el.style.display='block';el.className='fav-strip';el.innerHTML=`<div class="fav-strip-lbl">Favourites — tap to add</div><div class="fav-chips">${favs.map(([,name])=>`<button class="fav-chip" onclick="addFavItem(${JSON.stringify(name)})">${esc(name)}</button>`).join('')}</div>`;}
 
 function addGrocery(){const el=document.getElementById('gi'),n=el.value.trim();if(!n)return;dbNew('grocery',{name:n,qty:1,checked:false,cat:catOf(n),by:me,at:Date.now()});el.value='';el.focus();}
 function rGrocery(){
@@ -373,13 +424,35 @@ function rGrocery(){
   items.sort((a,b)=>{const ca=CORD.indexOf(a[1].cat||'other'),cb=CORD.indexOf(b[1].cat||'other');return ca!==cb?ca-cb:(a[1].at||0)-(b[1].at||0);});
   let html='',lc=null;
   for(const[id,it]of items){const c=(CLBL[it.cat]?it.cat:null)||'other';if(c!==lc){html+=`<div class="cat-hdr">${CLBL[c]}</div>`;lc=c;}
-    html+=`<div class="item"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div><div class="cb${it.checked?' on':''}" onclick="toggleCheck('${id}')"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5"/></svg></div><div class="item-body"><div class="item-name${it.checked?' done':''}">${esc(it.name)}</div></div><div class="qty-wrap"><div class="qty-b" onclick="adjQty('${id}',-1)">−</div><div class="qty-n">${it.qty||1}</div><div class="qty-b" onclick="adjQty('${id}',1)">+</div></div><div class="act-row"><button class="act-b eg" onclick="editGrocery('${id}')">✎</button><button class="act-b del" onclick="rm('grocery','${id}')">✕</button></div></div>`;}
+    const isFav=live.favourites&&live.favourites[favKey(it.name)]!==undefined;
+    html+=`<div class="item"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div><div class="cb${it.checked?' on':''}" onclick="toggleCheck('${id}')"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5"/></svg></div><div class="item-body" style="cursor:pointer" onclick="editGrocery('${id}')"><div class="item-name${it.checked?' done':''}">${esc(it.name)}</div></div><div class="qty-wrap"><div class="qty-b" onclick="adjQty('${id}',-1)">−</div><div class="qty-n">${it.qty||1}</div><div class="qty-b" onclick="adjQty('${id}',1)">+</div></div><div class="act-row"><button class="fav-btn${isFav?' on':''}" onclick="toggleFav('${esc(it.name)}')" title="${isFav?'Remove from favourites':'Add to favourites'}">⭐</button><button class="act-b del" onclick="rm('grocery','${id}')">✕</button></div></div>`;}
   el.innerHTML=html;
 }
 function toggleCheck(id){const it=live.grocery[id];if(it)dbSet(`grocery/${id}/checked`,!it.checked);}
 function adjQty(id,d){const it=live.grocery[id];if(it)dbSet(`grocery/${id}/qty`,Math.max(1,(it.qty||1)+d));}
 function clearChecked(){Object.entries(live.grocery||{}).forEach(([id,it])=>{if(it.checked)rm('grocery',id);});}
 function editGrocery(id){const it=live.grocery[id];openSheet('Edit item',`<input class="efield" id="ef-n" value="${esc(it.name)}" placeholder="Name"><select class="efield" id="ef-c">${CORD.map(c=>`<option value="${c}"${it.cat===c?' selected':''}>${CLBL[c]}</option>`).join('')}</select>`,()=>{const n=document.getElementById('ef-n').value.trim(),c=document.getElementById('ef-c').value;if(n){dbSet(`grocery/${id}/name`,n);dbSet(`grocery/${id}/cat`,c);}});}
+
+function compressImage(file,cb){const reader=new FileReader();reader.onload=e=>{const img=new Image();img.onload=()=>{const MAX=500;let w=img.width,h=img.height;if(w>MAX||h>MAX){if(w>h){h=Math.round(h*MAX/w);w=MAX;}else{w=Math.round(w*MAX/h);h=MAX;}}const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);cb(canvas.toDataURL('image/jpeg',0.7));};img.src=e.target.result;};reader.readAsDataURL(file);}
+function onCookPhotoSelect(input){const file=input.files[0];if(!file)return;compressImage(file,data=>{pendingCookPhoto=data;const prev=document.getElementById('cook-photo-prev');prev.src=data;prev.style.display='block';document.getElementById('cook-photo-lbl').textContent='Change';});input.value='';}
+function addCook(){const el=document.getElementById('ci'),n=el.value.trim();if(!n)return;const link=document.getElementById('ci-link').value.trim();dbNew('cook',{name:n,link:link,photo:pendingCookPhoto,notes:'',by:me,at:Date.now()});el.value='';document.getElementById('ci-link').value='';pendingCookPhoto='';const prev=document.getElementById('cook-photo-prev');prev.src='';prev.style.display='none';document.getElementById('cook-photo-lbl').textContent='Photo';el.focus();}
+function rCook(){
+  const items=Object.entries(live.cook||{}).sort((a,b)=>(b[1].at||0)-(a[1].at||0)),el=document.getElementById('cook-list');
+  if(!items.length){el.innerHTML='<div class="empty"><div class="empty-icon">🍳</div><div class="empty-text">No recipes yet</div></div>';return;}
+  el.innerHTML=items.map(([id,it])=>`<div class="recipe-card"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div>${it.photo?`<img class="recipe-photo" src="${it.photo}" loading="lazy" onclick="editCook('${id}')" style="cursor:pointer">`:`<div class="recipe-photo-ph" onclick="editCook('${id}')" style="cursor:pointer">🍳</div>`}<div class="recipe-body" style="padding-left:2px;cursor:pointer" onclick="editCook('${id}')"><div class="recipe-name">${esc(it.name)}</div>${it.notes?`<div class="recipe-notes">${esc(it.notes)}</div>`:''}</div><div class="recipe-actions">${it.link?`<a class="link-pill" href="${esc(it.link)}" target="_blank">🔗</a>`:''}<button class="act-b del" onclick="rm('cook','${id}')">✕</button></div></div>`).join('');
+}
+function editCook(id){
+  const it=live.cook[id];
+  let ephotoChanged=false,ephoto=it.photo||'';
+  const photoHtml=ephoto?`<img id="ef-cprev" src="${ephoto}" style="width:100%;max-height:130px;object-fit:cover;border-radius:10px;margin-bottom:9px">`:'<div id="ef-cprev" style="display:none"></div>';
+  openSheet('Edit recipe',`<input class="efield" id="ef-cn" value="${esc(it.name)}" placeholder="Recipe name"><input class="efield" id="ef-cl" value="${esc(it.link||'')}" placeholder="Link (optional)" type="url">${photoHtml}<div style="display:flex;gap:8px;margin-bottom:9px"><label class="photo-upload-btn" style="flex:1;justify-content:center">📷 ${ephoto?'Change photo':'Add photo'}<input type="file" accept="image/*" style="display:none" onchange="(function(inp){if(!inp.files[0])return;compressImage(inp.files[0],d=>{ephotoChanged=true;ephoto=d;const p=document.getElementById('ef-cprev');p.src=d;p.style.display='block';inp.value='';});}).call(null,this)"></label>${ephoto?`<button onclick="(function(){ephotoChanged=true;ephoto='';document.getElementById('ef-cprev').src='';document.getElementById('ef-cprev').style.display='none';})()" style="padding:9px 12px;border:1px solid #E0355A;border-radius:9px;font-size:13px;color:#E0355A;background:#fff;cursor:pointer">Remove</button>`:''}</div><textarea class="efield" id="ef-cnotes" placeholder="Notes (optional)" style="height:90px;resize:none">${esc(it.notes||'')}</textarea>`,()=>{
+    const n=document.getElementById('ef-cn').value.trim();if(!n)return;
+    dbSet(`cook/${id}/name`,n);
+    dbSet(`cook/${id}/link`,document.getElementById('ef-cl').value.trim());
+    dbSet(`cook/${id}/notes`,document.getElementById('ef-cnotes').value.trim());
+    if(ephotoChanged)dbSet(`cook/${id}/photo`,ephoto);
+  });
+}
 
 function addWatch(){const t=document.getElementById('wi').value.trim();if(!t)return;dbNew('watch',{title:t,type:document.getElementById('w-type').value,genre:document.getElementById('w-genre').value,platform:document.getElementById('w-plat').value||'',status:'towatch',by:me,at:Date.now()});document.getElementById('wi').value='';document.getElementById('w-plat').value='';}
 function wf(chip,f){if(f==='all'){wFilters.clear();wFilters.add('all');document.querySelectorAll('#wfilters .fchip').forEach(c=>c.classList.remove('on'));chip.classList.add('on');}else{wFilters.delete('all');document.querySelector('[data-f="all"]').classList.remove('on');if(wFilters.has(f)){wFilters.delete(f);chip.classList.remove('on');if(!wFilters.size){wFilters.add('all');document.querySelector('[data-f="all"]').classList.add('on');}}else{wFilters.add(f);chip.classList.add('on');}}rWatch();}
@@ -390,7 +463,7 @@ function rWatch(){
   const ord=['watching','towatch','watched'];
   items.sort((a,b)=>{const sa=ord.indexOf(a[1].status||'towatch'),sb=ord.indexOf(b[1].status||'towatch');return sa!==sb?sa-sb:(b[1].at||0)-(a[1].at||0);});
   el.innerHTML=items.map(([id,it])=>{const st=it.status||'towatch';
-    return `<div class="item" id="wi-${id}" style="user-select:none"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div><div class="item-body"><div class="item-name">${esc(it.title)}</div><div class="item-sub"><span class="pill p-tag">${it.type==='tv'?'TV':'Movie'}</span><span class="pill p-tag">${GLBL[it.genre]||it.genre}</span>${it.platform?`<span class="pill p-tag">${esc(it.platform)}</span>`:''}<span class="pill p-${st}" style="cursor:pointer" onclick="pickStatus('${id}')">${WLBL[st]}</span></div></div><div class="act-row"><button class="act-b ew" onclick="editWatch('${id}')">✎</button><button class="act-b del" onclick="rm('watch','${id}')">✕</button></div></div>`;
+    return `<div class="item" id="wi-${id}" style="user-select:none"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div><div class="item-body" style="cursor:pointer" onclick="editWatch('${id}')"><div class="item-name">${esc(it.title)}</div><div class="item-sub"><span class="pill p-tag">${it.type==='tv'?'TV':'Movie'}</span><span class="pill p-tag">${GLBL[it.genre]||it.genre}</span>${it.platform?`<span class="pill p-tag">${esc(it.platform)}</span>`:''}<span class="pill p-${st}" style="cursor:pointer" onclick="event.stopPropagation();pickStatus('${id}')">${WLBL[st]}</span></div></div><div class="act-row"><button class="act-b del" onclick="rm('watch','${id}')">✕</button></div></div>`;
   }).join('');
   items.forEach(([id])=>addLongPress(id));
 }
@@ -414,7 +487,7 @@ function rTodo(){
   if(!items.length){el.innerHTML='<div class="empty"><div class="empty-icon">✅</div><div class="empty-text">Nothing to buy or do</div></div>';return;}
   const po=['now','soon','later'];
   items.sort((a,b)=>{const pa=po.indexOf(a[1].priority||'soon'),pb=po.indexOf(b[1].priority||'soon');return pa!==pb?pa-pb:(a[1].at||0)-(b[1].at||0);});
-  el.innerHTML=items.map(([id,it])=>`<div class="item"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div><div class="item-body"><div class="item-name">${esc(it.text)}</div></div><span style="display:flex;align-items:center;gap:0;flex-shrink:0;cursor:pointer" onclick="cycleWho('${id}')" title="Tap to change who">${whobadge(it.who||'both')}</span><span class="pill p-${it.priority||'soon'}" style="cursor:pointer" onclick="cyclePri('${id}')">${PLBL[it.priority||'soon']}</span><div class="act-row"><button class="act-b et" onclick="editTodo('${id}')">✎</button><button class="act-b del" onclick="rm('todo','${id}')">✕</button></div></div>`).join('');
+  el.innerHTML=items.map(([id,it])=>`<div class="item"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div><div class="item-body" style="cursor:pointer" onclick="editTodo('${id}')"><div class="item-name">${esc(it.text)}</div></div><span style="display:flex;align-items:center;gap:0;flex-shrink:0;cursor:pointer" onclick="cycleWho('${id}')" title="Tap to change who">${whobadge(it.who||'both')}</span><span class="pill p-${it.priority||'soon'}" style="cursor:pointer" onclick="cyclePri('${id}')">${PLBL[it.priority||'soon']}</span><div class="act-row"><button class="act-b del" onclick="rm('todo','${id}')">✕</button></div></div>`).join('');
 }
 function cycleWho(id){const it=live.todo[id];if(!it)return;const wo=['both','scott','leigh'],i=wo.indexOf(it.who||'both');dbSet(`todo/${id}/who`,wo[(i+1)%3]);}
 function cyclePri(id){const it=live.todo[id];if(!it)return;const po=['now','soon','later'],i=po.indexOf(it.priority||'soon');dbSet(`todo/${id}/priority`,po[(i+1)%3]);}
@@ -422,7 +495,7 @@ function editTodo(id){const it=live.todo[id];openSheet('Edit',`<input class="efi
 
 function urlHint(u){try{const x=new URL(u),d=x.hostname.replace('www.',''),p=x.pathname.replace(/\/$/,'').split('/').filter(Boolean).slice(0,3).join(' › ');return d+(p?' · '+p:'');}catch(e){return '';}}
 function addShared(){const el=document.getElementById('si'),t=el.value.trim();if(!t)return;const isUrl=/^https?:\/\//i.test(t);dbNew('shared',{text:t,isUrl,hint:isUrl?urlHint(t):'',note:'',by:me,at:Date.now()});el.value='';el.focus();}
-function rShared(){const items=Object.entries(live.shared||{}),el=document.getElementById('shared-list');if(!items.length){el.innerHTML='<div class="empty"><div class="empty-icon">🔗</div><div class="empty-text">No links or notes yet</div></div>';return;}items.sort((a,b)=>(b[1].at||0)-(a[1].at||0));el.innerHTML=items.map(([id,it])=>`<div class="item"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div><div class="item-body" style="min-width:0;overflow:hidden">${it.isUrl?`<a href="${esc(it.text)}" target="_blank" class="link-text">${esc(it.note||it.hint||it.text)}</a><div class="link-hint">${esc(it.hint||'')}</div>`:`<div class="item-name" style="white-space:pre-wrap">${esc(it.text)}</div>${it.note?`<div style="font-size:13px;color:#9CA3AF;margin-top:3px">${esc(it.note)}</div>`:''}`}</div><div class="act-row"><button class="act-b es" onclick="editShared('${id}')">✎</button><button class="act-b del" onclick="rm('shared','${id}')">✕</button></div></div>`).join('');}
+function rShared(){const items=Object.entries(live.shared||{}),el=document.getElementById('shared-list');if(!items.length){el.innerHTML='<div class="empty"><div class="empty-icon">🔗</div><div class="empty-text">No links or notes yet</div></div>';return;}items.sort((a,b)=>(b[1].at||0)-(a[1].at||0));el.innerHTML=items.map(([id,it])=>`<div class="item"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div><div class="item-body" style="min-width:0;overflow:hidden;cursor:pointer" onclick="if(event.target.tagName!=='A')editShared('${id}')">${it.isUrl?`<a href="${esc(it.text)}" target="_blank" class="link-text">${esc(it.note||it.hint||it.text)}</a><div class="link-hint">${esc(it.hint||'')}</div>`:`<div class="item-name" style="white-space:pre-wrap">${esc(it.text)}</div>${it.note?`<div style="font-size:13px;color:#9CA3AF;margin-top:3px">${esc(it.note)}</div>`:''}`}</div><div class="act-row"><button class="act-b del" onclick="rm('shared','${id}')">✕</button></div></div>`).join('');}
 function editShared(id){const it=live.shared[id];openSheet('Edit',`<input class="efield" id="ef-u" value="${esc(it.text)}" placeholder="Link or note"><input class="efield" id="ef-no" value="${esc(it.note||'')}" placeholder="Add a label (optional)">`,()=>{const t=document.getElementById('ef-u').value.trim(),n=document.getElementById('ef-no').value.trim();if(t){const isUrl=/^https?:\/\//i.test(t);dbSet(`shared/${id}/text`,t);dbSet(`shared/${id}/isUrl`,isUrl);dbSet(`shared/${id}/hint`,isUrl?urlHint(t):'');dbSet(`shared/${id}/note`,n);}});}
 
 function rm(sec,id){const it=live[sec][id];if(!it)return;undoData={sec,id,it:JSON.parse(JSON.stringify(it))};dbDel(`${sec}/${id}`);showUndo();}
