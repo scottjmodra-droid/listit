@@ -415,7 +415,7 @@ function catOf(n){const l=n.toLowerCase();for(const[c,ks]of Object.entries(CATS)
 function favKey(n){return n.toLowerCase().trim().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_').slice(0,64);}
 function toggleFav(name){const k=favKey(name);if(live.favourites&&live.favourites[k]!==undefined){dbDel('favourites/'+k);}else{dbSet('favourites/'+k,name);}}
 function addFavItem(name){dbNew('grocery',{name:name,qty:1,checked:false,cat:catOf(name),by:me,at:Date.now()});}
-function rFavStrip(){const favs=Object.entries(live.favourites||{});const el=document.getElementById('fav-strip');if(!el)return;if(!favs.length){el.style.display='none';return;}favs.sort((a,b)=>a[1].localeCompare(b[1]));el.style.display='block';el.className='fav-strip';el.innerHTML=`<div class="fav-strip-lbl">Favourites — tap to add</div><div class="fav-chips">${favs.map(([,name])=>`<button class="fav-chip" onclick="addFavItem(${JSON.stringify(name)})">${esc(name)}</button>`).join('')}</div>`;}
+function rFavStrip(){const favs=Object.entries(live.favourites||{});const el=document.getElementById('fav-strip');if(!el)return;if(!favs.length){el.style.display='none';return;}favs.sort((a,b)=>a[1].localeCompare(b[1]));el.style.display='block';el.className='fav-strip';el.innerHTML=`<div class="fav-strip-lbl">Favourites — tap to add</div><div class="fav-chips">${favs.map(([,name])=>`<button class="fav-chip" data-n="${esc(name)}" onclick="addFavItem(this.dataset.n)">${esc(name)}</button>`).join('')}</div>`;}
 
 function addGrocery(){const el=document.getElementById('gi'),n=el.value.trim();if(!n)return;dbNew('grocery',{name:n,qty:1,checked:false,cat:catOf(n),by:me,at:Date.now()});el.value='';el.focus();}
 function rGrocery(){
