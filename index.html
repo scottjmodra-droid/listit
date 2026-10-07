@@ -10,6 +10,7 @@
 <meta name="version" content="1.8">
 <meta name="theme-color" content="#2433B0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
@@ -366,7 +367,11 @@ function initFirebase(cfg){
   if(!firebase.apps.length)firebase.initializeApp(cfg);
   db=firebase.database();
   try{const c=JSON.parse(localStorage.getItem('listit_cache')||'{}');if(Object.keys(c).length){Object.assign(live,c);renderAll();}}catch(e){}
-  setupListeners();
+  // The database only answers apps that have identified themselves, so do that quietly first.
+  // No email or password is involved. If it fails (no connection), try again shortly.
+  let listening=false;
+  const connect=()=>firebase.auth().signInAnonymously().catch(e=>{console.warn('sign-in',e&&e.code);setTimeout(connect,5000);});
+  firebase.auth().onAuthStateChanged(u=>{if(u&&!listening){listening=true;setupListeners();}else if(!u)connect();});
   if(!me){document.getElementById('user-overlay').style.display='flex';}else launchApp();
 }
 function renderAll(){['grocery','cook','watch','todo','shared'].forEach(renderSec);rFavStrip();}
