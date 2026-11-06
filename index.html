@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="List it">
-<meta name="version" content="2.0">
+<meta name="version" content="2.1">
 <meta name="theme-color" content="#2433B0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -149,6 +149,23 @@ button,input,select,textarea{font-family:inherit}
 .t-cook .section-title{color:#EA580C}
 .tab-btn.ak{color:#EA580C}.tab-btn.ak::after{width:32px;background:#EA580C}
 .add-area.ck:focus-within{border-color:#EA580C}
+/* v2.1 layout */
+.section-header{display:none}
+.logo-tile,.user-chip,#ver-tag{display:none!important}
+.top-bar{padding:8px 16px}
+.top-title{font-size:20px}
+.gear{width:36px;height:36px;border-radius:18px;background:rgba(255,255,255,.18);color:#fff;border:0;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.tab-bar{gap:8px;padding:8px 10px;border-bottom:0}
+.tab-btn{border-radius:14px;padding:9px 4px 8px;font-size:13px;gap:3px;transition:background .15s,color .15s}
+.tab-btn::after{display:none}
+.tab-btn svg{width:24px;height:24px}
+#tb-grocery{background:#EAF0FF;color:#2433B0}#tb-cook{background:#FFF1E6;color:#EA580C}#tb-watch{background:#F0EAFF;color:#5B21B6}#tb-todo{background:#E6FAF5;color:#065F46}#tb-shared{background:#FEF7E6;color:#92400E}
+.tab-btn.ag{background:#2433B0!important;color:#fff!important}.tab-btn.ak{background:#EA580C!important;color:#fff!important}.tab-btn.aw{background:#5B21B6!important;color:#fff!important}.tab-btn.at{background:#065F46!important;color:#fff!important}.tab-btn.as{background:#92400E!important;color:#fff!important}
+.tbadge{position:absolute;top:4px;right:calc(50% - 26px);min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:#E0355A;color:#fff;font-size:11px;font-weight:700;line-height:18px}
+.set-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #F0F1F6;font-size:15px;color:#1A1E5C}
+.set-lbl{font-size:12px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.4px;margin:14px 0 2px}
+.seg{display:flex;gap:6px}.seg button{padding:7px 12px;border-radius:99px;border:1.5px solid #DDE0EC;background:#fff;font-size:13px;font-weight:600;color:#1A1E5C;cursor:pointer}.seg button.on{background:#1A1E5C;color:#fff;border-color:#1A1E5C}
+
 .wsug-i{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid #F0F1F6;cursor:pointer}
 .wsug-i img,.wsug-i .np{width:34px;height:50px;border-radius:5px;object-fit:cover;background:#EEE;flex:none}
 .wsug-t{font-size:15px;color:#1A1E5C;font-weight:600}.wsug-m{font-size:12px;color:#6B7280}
@@ -266,7 +283,7 @@ button,input,select,textarea{font-family:inherit}
       <div class="user-chip-dot" id="chip-dot"></div>
       <span class="user-chip-name" id="chip-name"></span>
     </div>
-    <span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:500;letter-spacing:0.03em">v2.0</span>
+    <span id="ver-tag">v2.1</span><button class="gear" onclick="openSettings()" aria-label="Settings">⚙︎</button>
   </div>
   <div class="tab-bar" id="tab-bar">
     <button class="tab-btn ag" id="tb-grocery" onclick="goSec('grocery',this)"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Grocery</button>
@@ -381,7 +398,7 @@ function initFirebase(cfg){
 }
 function renderAll(){['grocery','cook','watch','todo','shared'].forEach(renderSec);rFavStrip();}
 function pickUser(u){me=u;localStorage.setItem('listit_user',u);hide('user-overlay');launchApp();}
-function launchApp(){const a=document.getElementById('app');a.style.cssText='display:flex;flex-direction:column;height:100%';document.getElementById('chip-dot').style.background=UC[me];document.getElementById('chip-name').textContent=UN[me];addSectionSwipe();setAppIcon();}
+function launchApp(){const a=document.getElementById('app');a.style.cssText='display:flex;flex-direction:column;height:100%';document.getElementById('chip-dot').style.background=UC[me];document.getElementById('chip-name').textContent=UN[me];addSectionSwipe();setAppIcon();;const o=localStorage.getItem('listit_open');if(o&&o!=='grocery')goSec(o,document.getElementById('tb-'+o));}
 function genAppIcon(){
   const s=180,c=document.createElement('canvas');c.width=s;c.height=s;const ctx=c.getContext('2d');
   const r=40;ctx.beginPath();ctx.moveTo(r,0);ctx.lineTo(s-r,0);ctx.quadraticCurveTo(s,0,s,r);ctx.lineTo(s,s-r);ctx.quadraticCurveTo(s,s,s-r,s);ctx.lineTo(r,s);ctx.quadraticCurveTo(0,s,0,s-r);ctx.lineTo(0,r);ctx.quadraticCurveTo(0,0,r,0);ctx.closePath();ctx.fillStyle='#2433B0';ctx.fill();
@@ -401,6 +418,7 @@ function setupListeners(){
   // old Cook list retired: Cook tab now shows Cook It. Clear the old items once.
   if(!localStorage.getItem('listit_cook_cleared')){db.ref('cook').remove().then(()=>localStorage.setItem('listit_cook_cleared','1')).catch(()=>{});}
   db.ref('cookit/config/worker').on('value',x=>{wWorker=x.val()||null;});
+  db.ref('settings/hidden').on('value',x=>{hiddenTabs=x.val()||{};applyHidden();});
   ['grocery','watch','todo','shared'].forEach(s=>{
     db.ref(s).on('value',snap=>{
       live[s]=snap.val()||{};
@@ -417,7 +435,7 @@ function setupListeners(){
 function dbSet(p,v){db.ref(p).set(v);}
 function dbDel(p){db.ref(p).remove();}
 function dbNew(s,o){const id='i'+Date.now()+Math.random().toString(36).slice(2,5);db.ref(s+'/'+id).set(o);return id;}
-function renderSec(s){if(s==='grocery')rGrocery();else if(s==='cook')return;else if(s==='watch')rWatch();else if(s==='todo')rTodo();else if(s==='shared')rShared();}
+function renderSec(s){setTimeout(updBadges,0);if(s==='grocery')rGrocery();else if(s==='cook')return;else if(s==='watch')rWatch();else if(s==='todo')rTodo();else if(s==='shared')rShared();}
 
 const SECS=['grocery','cook','watch','todo','shared'];let curSec=0;
 function goSec(name,btn){if(name==='cook'){const f=document.getElementById('cook-frame');if(!f.src)f.src='cookit/';}curSec=SECS.indexOf(name);document.querySelectorAll('.section-view').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(e=>{e.className='tab-btn';});document.getElementById('sv-'+name).classList.add('active');const m=SMETA[name];btn.classList.add(m.na);document.getElementById('top-bar').className='top-bar '+m.bar;document.getElementById('top-title').textContent=m.title;}
@@ -556,8 +574,29 @@ window.addEventListener('offline',updateOnlineStatus);
 
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
 
-function openSheet(title,html,cb){document.getElementById('sheet-title').textContent=title;document.getElementById('sheet-body').innerHTML=html;sheetCb=cb;document.getElementById('esheet').classList.add('open');document.getElementById('ebdrop').classList.add('open');document.getElementById('sheet-save').onclick=()=>{if(sheetCb)sheetCb();closeSheet();};setTimeout(()=>{const f=document.querySelector('#sheet-body input,#sheet-body textarea');if(f)f.focus();},120);}
+function openSheet(title,html,cb){document.getElementById('sheet-title').textContent=title;document.getElementById('sheet-save').textContent='Save';document.getElementById('sheet-body').innerHTML=html;sheetCb=cb;document.getElementById('esheet').classList.add('open');document.getElementById('ebdrop').classList.add('open');document.getElementById('sheet-save').onclick=()=>{if(sheetCb)sheetCb();closeSheet();};setTimeout(()=>{const f=document.querySelector('#sheet-body input,#sheet-body textarea');if(f)f.focus();},120);}
 function closeSheet(){document.getElementById('esheet').classList.remove('open');document.getElementById('ebdrop').classList.remove('open');sheetCb=null;}
+
+// ---------- v2.1: settings, hidden tabs, badges ----------
+const VER='2.1',ALLSECS=['grocery','cook','watch','todo','shared'];let hiddenTabs={};
+function applyHidden(){SECS.length=0;ALLSECS.forEach(s=>{const b=document.getElementById('tb-'+s),h=!!hiddenTabs[s];if(b)b.style.display=h?'none':'';if(!h)SECS.push(s);});
+  const cur=document.querySelector('.section-view.active');const curName=cur&&cur.id.replace('sv-','');if(curName&&hiddenTabs[curName])goSec('grocery',document.getElementById('tb-grocery'));curSec=Math.max(0,SECS.indexOf(curName));}
+function updBadges(){const set=(s,n)=>{const b=document.getElementById('tb-'+s);if(!b)return;let e=b.querySelector('.tbadge');if(!n){if(e)e.remove();return;}if(!e){e=document.createElement('span');e.className='tbadge';b.appendChild(e);}e.textContent=n>99?'99+':n;};
+  set('grocery',Object.values(live.grocery||{}).filter(i=>!i.checked).length);
+  set('watch',Object.values(live.watch||{}).filter(i=>(i.status||'towatch')==='watching').length);}
+function openSettings(){const open=localStorage.getItem('listit_open')||'grocery';
+  openSheet('Settings',`<div style="max-height:62vh;overflow-y:auto">
+  <div class="set-lbl">Who's using this phone</div><div class="set-row"><span>I am</span><span class="seg">${['scott','leigh'].map(u=>`<button class="${me===u?'on':''}" onclick="setMe('${u}')">${UN[u]}</button>`).join('')}</span></div>
+  <div class="set-lbl">Tabs (both phones)</div>${[['todo','Buy / Do'],['shared','Shared']].map(([k,l])=>`<div class="set-row"><span>${l}</span><span class="seg"><button class="${hiddenTabs[k]?'':'on'}" onclick="dbSet('settings/hidden/${k}',null);setTimeout(openSettings,200)">Show</button><button class="${hiddenTabs[k]?'on':''}" onclick="dbSet('settings/hidden/${k}',true);setTimeout(openSettings,200)">Hide</button></span></div>`).join('')}
+  <div class="set-lbl">This phone</div><div class="set-row"><span>Open on</span><span class="seg">${[['grocery','Grocery'],['cook','Cook'],['watch','Watch']].map(([k,l])=>`<button class="${open===k?'on':''}" onclick="localStorage.setItem('listit_open','${k}');openSettings()">${l}</button>`).join('')}</span></div>
+  <div class="set-lbl">Lookups</div><div class="set-row"><span>Recipe import &amp; Watch search</span><span id="set-imp" style="font-size:14px;color:#6B7280">Checking…</span></div>
+  <div class="set-lbl">App</div><div class="set-row"><span>Version ${VER}</span><button class="wd-tog" onclick="forceUpdate()">Check for update</button></div></div>`,null);
+  document.getElementById('sheet-save').textContent='Done';
+  setTimeout(()=>{if(document.activeElement)document.activeElement.blur();},150);
+  const el=()=>document.getElementById('set-imp');
+  if(!wWorker){if(el())el().textContent='Not set up';}else wApi({watchSearch:'up'}).then(()=>{if(el())el().textContent='✅ Working';}).catch(e=>{if(el())el().textContent='⚠️ '+e.message;});}
+function setMe(u){me=u;localStorage.setItem('listit_user',u);document.getElementById('chip-dot').style.background=UC[me];document.getElementById('chip-name').textContent=UN[me];openSettings();}
+async function forceUpdate(){try{const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}catch(e){}location.reload();}
 </script>
 </body>
 </html>
