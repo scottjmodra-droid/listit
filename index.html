@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="List it">
-<meta name="version" content="1.8">
+<meta name="version" content="1.9">
 <meta name="theme-color" content="#2433B0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -273,18 +273,7 @@ button,input,select,textarea{font-family:inherit}
   </div>
 
   <div class="section-view t-cook" id="sv-cook">
-    <div class="section-header t-cook"><div class="section-title">Cook</div><div class="section-sub">Tap 🔗 to open a recipe link</div></div>
-    <div class="section-scroll">
-      <div class="add-area ck">
-        <div class="add-row"><input class="add-input" id="ci" placeholder="Recipe name…" onkeydown="if(event.key==='Enter')addCook()"><button class="add-btn ck" onclick="addCook()">+</button></div>
-        <div class="add-extras" style="margin-top:8px">
-          <input class="add-select" id="ci-link" type="url" placeholder="Link (optional)" style="flex:2;min-width:100px">
-          <label class="photo-upload-btn">📷 <span id="cook-photo-lbl">Photo</span><input type="file" accept="image/*" style="display:none" id="cook-photo-input" onchange="onCookPhotoSelect(this)"></label>
-        </div>
-        <img id="cook-photo-prev" style="display:none;width:100%;max-height:110px;object-fit:cover;border-radius:10px;margin-top:8px">
-      </div>
-      <div id="cook-list"></div>
-    </div>
+    <iframe id="cook-frame" title="Cook It" allow="screen-wake-lock; clipboard-read" style="flex:1;width:100%;border:0;background:#FAF8F5"></iframe>
   </div>
 
   <div class="section-view t-watch" id="sv-watch">
@@ -393,7 +382,9 @@ function addSectionSwipe(){const app=document.getElementById('app');let sx=0,sy=
 function switchUser(){const n=me==='scott'?'leigh':'scott';if(confirm('Switch to '+UN[n]+'?')){me=n;localStorage.setItem('listit_user',me);document.getElementById('chip-dot').style.background=UC[me];document.getElementById('chip-name').textContent=UN[me];}}
 
 function setupListeners(){
-  ['grocery','cook','watch','todo','shared'].forEach(s=>{
+  // old Cook list retired: Cook tab now shows Cook It. Clear the old items once.
+  if(!localStorage.getItem('listit_cook_cleared')){db.ref('cook').remove().then(()=>localStorage.setItem('listit_cook_cleared','1')).catch(()=>{});}
+  ['grocery','watch','todo','shared'].forEach(s=>{
     db.ref(s).on('value',snap=>{
       live[s]=snap.val()||{};
       try{const c=JSON.parse(localStorage.getItem('listit_cache')||'{}');c[s]=live[s];localStorage.setItem('listit_cache',JSON.stringify(c));}catch(e){}
@@ -409,10 +400,10 @@ function setupListeners(){
 function dbSet(p,v){db.ref(p).set(v);}
 function dbDel(p){db.ref(p).remove();}
 function dbNew(s,o){const id='i'+Date.now()+Math.random().toString(36).slice(2,5);db.ref(s+'/'+id).set(o);return id;}
-function renderSec(s){if(s==='grocery')rGrocery();else if(s==='cook')rCook();else if(s==='watch')rWatch();else if(s==='todo')rTodo();else if(s==='shared')rShared();}
+function renderSec(s){if(s==='grocery')rGrocery();else if(s==='cook')return;else if(s==='watch')rWatch();else if(s==='todo')rTodo();else if(s==='shared')rShared();}
 
 const SECS=['grocery','cook','watch','todo','shared'];let curSec=0;
-function goSec(name,btn){curSec=SECS.indexOf(name);document.querySelectorAll('.section-view').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(e=>{e.className='tab-btn';});document.getElementById('sv-'+name).classList.add('active');const m=SMETA[name];btn.classList.add(m.na);document.getElementById('top-bar').className='top-bar '+m.bar;document.getElementById('top-title').textContent=m.title;}
+function goSec(name,btn){if(name==='cook'){const f=document.getElementById('cook-frame');if(!f.src)f.src='cookit/';}curSec=SECS.indexOf(name);document.querySelectorAll('.section-view').forEach(e=>e.classList.remove('active'));document.querySelectorAll('.tab-btn').forEach(e=>{e.className='tab-btn';});document.getElementById('sv-'+name).classList.add('active');const m=SMETA[name];btn.classList.add(m.na);document.getElementById('top-bar').className='top-bar '+m.bar;document.getElementById('top-title').textContent=m.title;}
 
 const esc=s=>s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):'';
 function catOf(n){const l=n.toLowerCase();for(const[c,ks]of Object.entries(CATS)){if(ks.some(k=>l.includes(k)))return c;}return'other';}
