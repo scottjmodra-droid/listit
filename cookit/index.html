@@ -388,10 +388,14 @@ function renderShop(){
 }
 function togHave(k){have.has(k)?have.delete(k):have.add(k);const y=document.querySelector('.sheet').scrollTop;renderShop();document.querySelector('.sheet').scrollTop=y;}
 async function sendToListIt(){
-  const r=recipes[curId];const jobs=[];
-  (r.ingredients||[]).forEach((i,k)=>{if(have.has(k))return;const t=ingText(i,scale);const name=t.n.replace(/,.*$/,'')+(t.q?` (${t.q})`:'');const id='i'+Date.now()+Math.random().toString(36).slice(2,5)+k;
-    jobs.push(db.ref('grocery/'+id).set({name,qty:1,checked:false,cat:catOf(t.n),by:me,at:Date.now(),from:r.title||''}));});
-  try{await Promise.all(jobs);closeSheet();toast(`Added ${jobs.length} to List It 🛒`);}catch(e){toast('Could not add: '+(e.code||e.message));}
+  const r=recipes[curId];let cur={};try{cur=(await db.ref('grocery').once('value')).val()||{};}catch(e){}
+  const norm=x=>x.toLowerCase().replace(/[^a-z ]/g,'').replace(/\s+/g,' ').trim();
+  const up={};let n=0;
+  (r.ingredients||[]).forEach((i,k)=>{if(have.has(k))return;const t=ingText(i,scale);const name=t.n.replace(/,.*$/,'').replace(/\(.*?\)/g,'').trim();n++;
+    const hit=Object.entries(cur).find(([,g])=>!g.checked&&norm(g.name||'')===norm(name));
+    if(hit){const[gid,g]=hit;up[gid+'/amt']=[g.amt,t.q].filter(Boolean).join(' + ');const fr=(g.from||'').split(', ').filter(Boolean);if(r.title&&!fr.includes(r.title))fr.push(r.title);up[gid+'/from']=fr.join(', ');}
+    else{const id='i'+Date.now()+Math.random().toString(36).slice(2,5)+k;up[id]={name:name.charAt(0).toUpperCase()+name.slice(1),amt:t.q||'',from:r.title||'',qty:1,checked:false,cat:catOf(name),by:me,at:Date.now()};cur[id]=up[id];}});
+  try{await db.ref('grocery').update(up);closeSheet();toast(`Added ${n} to List It 🛒`);}catch(e){toast('Could not add: '+(e.code||e.message));}
 }
 
 // ---------- cook mode ----------

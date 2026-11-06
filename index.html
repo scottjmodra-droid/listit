@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="List it">
-<meta name="version" content="2.2">
+<meta name="version" content="2.3">
 <meta name="theme-color" content="#2433B0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -278,15 +278,15 @@ button,input,select,textarea{font-family:inherit}
   <div id="offline-bar">⚡ Offline — showing your last saved list</div>
   <div class="top-bar bg-grocery" id="top-bar">
     <div class="logo-tile"><svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="38" height="38" rx="12" fill="white"/><path d="M10 20L16 26L28 12" stroke="#2433B0" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="30" cy="10" r="4" fill="#E0355A"/><circle cx="30" cy="10" r="2" fill="white"/></svg></div>
-    <span class="top-title" id="top-title">Grocery</span>
+    <span class="top-title" id="top-title">Shop</span>
     <div class="user-chip" onclick="switchUser()">
       <div class="user-chip-dot" id="chip-dot"></div>
       <span class="user-chip-name" id="chip-name"></span>
     </div>
-    <span id="ver-tag">v2.2</span><button class="gear" onclick="openSettings()" aria-label="Settings">⚙︎</button>
+    <span id="ver-tag">v2.3</span><button class="gear" onclick="openSettings()" aria-label="Settings">⚙︎</button>
   </div>
   <div class="tab-bar" id="tab-bar">
-    <button class="tab-btn ag" id="tb-grocery" onclick="goSec('grocery',this)"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Grocery</button>
+    <button class="tab-btn ag" id="tb-grocery" onclick="goSec('grocery',this)"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Shop</button>
     <button class="tab-btn" id="tb-cook" onclick="goSec('cook',this)"><svg viewBox="0 0 24 24"><path d="M3 2v7c0 1.1.9 2 2 2 1.1 0 2-.9 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3z"/><path d="M18 22v-3"/></svg>Cook</button>
     <button class="tab-btn" id="tb-watch" onclick="goSec('watch',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>Watch</button>
     <button class="tab-btn" id="tb-todo" onclick="goSec('todo',this)"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Buy / Do</button>
@@ -313,7 +313,7 @@ button,input,select,textarea{font-family:inherit}
       <div class="add-area w">
         <div class="add-row"><input class="add-input" id="wi" placeholder="Search a show or movie…" autocomplete="off" oninput="wSearch(this.value)" onkeydown="if(event.key==='Enter')addWatch()"><button class="add-btn w" onclick="addWatch()">+</button></div>
         <div id="wsug"></div>
-        <div class="add-extras">
+        <div class="add-extras" style="display:none">
           <select class="add-select" id="w-type"><option value="tv">TV show</option><option value="movie">Movie</option></select>
           <select class="add-select" id="w-genre"><option value="comedy">Comedy</option><option value="drama">Drama</option><option value="thriller">Thriller</option><option value="horror">Horror</option><option value="action">Action</option><option value="documentary">Doco</option><option value="other">Other</option></select>
           <select class="add-select" id="w-plat"><option value="">Platform…</option><option>Netflix</option><option>Disney+</option><option>Stan</option><option>Binge</option><option>Paramount+</option><option>HBO</option><option>Apple TV+</option><option>Prime</option><option>Cinema</option><option>Other</option></select>
@@ -372,7 +372,7 @@ const CATS={produce:['apple','banana','orange','grape','strawberry','blueberry',
 const CORD=['produce','meatdairy','other'];
 const CLBL={produce:'Fruit / Veg',meatdairy:'Meat & Dairy',other:'Other'};
 const PLBL={now:'Now',soon:'Soon',later:'Later'},WLBL={towatch:'To watch',watching:'Watching',watched:'Watched'},GLBL={comedy:'Comedy',drama:'Drama',thriller:'Thriller',horror:'Horror',action:'Action',documentary:'Doco',other:'Other'};
-const SMETA={grocery:{title:'Grocery',bar:'bg-grocery',na:'ag'},cook:{title:'Cook',bar:'bg-cook',na:'ak'},watch:{title:'To Watch',bar:'bg-watch',na:'aw'},todo:{title:'Buy / Do',bar:'bg-todo',na:'at'},shared:{title:'Shared',bar:'bg-shared',na:'as'}};
+const SMETA={grocery:{title:'Shop',bar:'bg-grocery',na:'ag'},cook:{title:'Cook',bar:'bg-cook',na:'ak'},watch:{title:'To Watch',bar:'bg-watch',na:'aw'},todo:{title:'Buy / Do',bar:'bg-todo',na:'at'},shared:{title:'Shared',bar:'bg-shared',na:'as'}};
 let me=localStorage.getItem('listit_user'),db=null,live={grocery:{},cook:{},watch:{},todo:{},shared:{},favourites:{}},wFilters=new Set(['all']),todoWhoFilter='both',undoData=null,undoTimer=null,sheetCb=null,pendingCookPhoto='';
 
 const FIREBASE_CFG={apiKey:"AIzaSyB5-IGWXIC2ADnqSY0skG2-4inuKK9RBjE",authDomain:"list-it-42be0.firebaseapp.com",databaseURL:"https://list-it-42be0-default-rtdb.firebaseio.com",projectId:"list-it-42be0",storageBucket:"list-it-42be0.firebasestorage.app",messagingSenderId:"54931131581",appId:"1:54931131581:web:3d6dad84545da89e6f7bd4"};
@@ -456,10 +456,10 @@ function rGrocery(){
   let html='',lc=null;
   for(const[id,it]of items){const c=(CLBL[it.cat]?it.cat:null)||'other';if(c!==lc){html+=`<div class="cat-hdr">${CLBL[c]}</div>`;lc=c;}
     const isFav=live.favourites&&live.favourites[favKey(it.name)]!==undefined;
-    html+=`<div class="item"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div><div class="cb${it.checked?' on':''}" onclick="toggleCheck('${id}')"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5"/></svg></div><div class="item-body" style="cursor:pointer" onclick="editGrocery('${id}')"><div class="item-name${it.checked?' done':''}">${esc(it.name)}</div></div><div class="qty-wrap"><div class="qty-b" onclick="adjQty('${id}',-1)">−</div><div class="qty-n">${it.qty||1}</div><div class="qty-b" onclick="adjQty('${id}',1)">+</div></div><div class="act-row"><button class="fav-btn${isFav?' on':''}" onclick="toggleFav('${esc(it.name)}')" title="${isFav?'Remove from favourites':'Add to favourites'}">⭐</button><button class="act-b del" onclick="rm('grocery','${id}')">✕</button></div></div>`;}
+    html+=`<div class="item"><div class="user-bar" style="background:${UC[it.checked&&it.checkedBy?it.checkedBy:it.by]||'#C0C4D6'}"></div><div class="cb${it.checked?' on':''}" onclick="toggleCheck('${id}')"><svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5"/></svg></div><div class="item-body" style="cursor:pointer" onclick="editGrocery('${id}')"><div class="item-name${it.checked?' done':''}">${esc(it.name)}</div>${it.amt||it.from?`<div style="font-size:12px;color:#9CA3AF;margin-top:2px">${esc([it.amt,it.from].filter(Boolean).join(' · '))}</div>`:''}</div><div class="qty-wrap"><div class="qty-b" onclick="adjQty('${id}',-1)">−</div><div class="qty-n">${it.qty||1}</div><div class="qty-b" onclick="adjQty('${id}',1)">+</div></div><div class="act-row"><button class="fav-btn${isFav?' on':''}" onclick="toggleFav('${esc(it.name)}')" title="${isFav?'Remove from favourites':'Add to favourites'}">⭐</button><button class="act-b del" onclick="rm('grocery','${id}')">✕</button></div></div>`;}
   el.innerHTML=html;
 }
-function toggleCheck(id){const it=live.grocery[id];if(it)dbSet(`grocery/${id}/checked`,!it.checked);}
+function toggleCheck(id){const it=live.grocery[id];if(!it)return;dbSet(`grocery/${id}/checked`,!it.checked);dbSet(`grocery/${id}/checkedBy`,it.checked?null:me);}
 function adjQty(id,d){const it=live.grocery[id];if(it)dbSet(`grocery/${id}/qty`,Math.max(1,(it.qty||1)+d));}
 function clearChecked(){Object.entries(live.grocery||{}).forEach(([id,it])=>{if(it.checked)rm('grocery',id);});}
 function editGrocery(id){const it=live.grocery[id];openSheet('Edit item',`<input class="efield" id="ef-n" value="${esc(it.name)}" placeholder="Name"><select class="efield" id="ef-c">${CORD.map(c=>`<option value="${c}"${it.cat===c?' selected':''}>${CLBL[c]}</option>`).join('')}</select>`,()=>{const n=document.getElementById('ef-n').value.trim(),c=document.getElementById('ef-c').value;if(n){dbSet(`grocery/${id}/name`,n);dbSet(`grocery/${id}/cat`,c);}});}
@@ -485,13 +485,13 @@ function editCook(id){
   });
 }
 
-function addWatch(){const t=document.getElementById('wi').value.trim();if(!t)return;document.getElementById('wsug').innerHTML='';dbNew('watch',{title:t,want:{[me]:true},type:document.getElementById('w-type').value,genre:document.getElementById('w-genre').value,platform:document.getElementById('w-plat').value||'',status:'towatch',by:me,at:Date.now()});document.getElementById('wi').value='';document.getElementById('w-plat').value='';}
+function addWatch(){const t=document.getElementById('wi').value.trim();if(!t)return;document.getElementById('wsug').innerHTML='';dbNew('watch',{title:t,want:{[me]:true},type:document.getElementById('w-type').value,genre:'other',platform:'',status:'towatch',by:me,at:Date.now()});document.getElementById('wi').value='';document.getElementById('w-plat').value='';}
 function wf(chip,f){if(f==='all'){wFilters.clear();wFilters.add('all');document.querySelectorAll('#wfilters .fchip').forEach(c=>c.classList.remove('on'));chip.classList.add('on');}else{wFilters.delete('all');document.querySelector('[data-f="all"]').classList.remove('on');if(wFilters.has(f)){wFilters.delete(f);chip.classList.remove('on');if(!wFilters.size){wFilters.add('all');document.querySelector('[data-f="all"]').classList.add('on');}}else{wFilters.add(f);chip.classList.add('on');}}rWatch();}
 function wMatch(it){if(wFilters.has('all'))return true;const tf=[...wFilters].filter(x=>x.startsWith('t:')),gf=[...wFilters].filter(x=>x.startsWith('g:')),sf=[...wFilters].filter(x=>x.startsWith('s:'));if(tf.length&&!tf.some(x=>x==='t:'+it.type))return false;if(gf.length&&!gf.some(x=>x==='g:'+it.genre))return false;if(sf.length&&!sf.some(x=>x==='s:'+(it.status||'towatch')))return false;if(wFilters.has('w:both')&&!(it.want&&it.want.scott&&it.want.leigh))return false;return true;}
 function rWatch(){
   const all=Object.entries(live.watch||{}),items=all.filter(([,it])=>wMatch(it)),el=document.getElementById('watch-list');
   const miss=all.filter(([,it])=>!it.tmdbId&&!it.noMatch).length;
-  document.getElementById('wtools').innerHTML=`<div class="wtools"><button class="wtool" onclick="wSort=wSort==='score'?'new':'score';rWatch()">Sort: ${wSort==='score'?'Best rated':'Newest'}</button>${miss?`<button class="wtool" id="wbf" onclick="wBackfill()">🔎 Look up ${miss} without info</button>`:''}</div>`;
+  document.getElementById('wtools').innerHTML=`<div class="wtools"><button class="wtool" onclick="wPickForUs()">🎲 Pick for us</button><button class="wtool" onclick="wSort=wSort==='score'?'new':'score';rWatch()">Sort: ${wSort==='score'?'Best rated':'Newest'}</button>${miss?`<button class="wtool" id="wbf" onclick="wBackfill()">🔎 Look up ${miss} without info</button>`:''}</div>`;
   if(!items.length){el.innerHTML='<div class="empty"><div class="empty-icon">🎬</div><div class="empty-text">Nothing to watch yet</div></div>';return;}
   const ord=['watching','towatch','watched'];
   items.sort((a,b)=>{const sa=ord.indexOf(a[1].status||'towatch'),sb=ord.indexOf(b[1].status||'towatch');if(sa!==sb)return sa-sb;return wSort==='score'?wScore(b[1])-wScore(a[1]):(b[1].at||0)-(a[1].at||0);});
@@ -508,9 +508,10 @@ const wGenre=gs=>{for(const g of gs||[])if(GMAP[g])return GMAP[g];return'other';
 const PMAP=[['netflix','Netflix'],['disney','Disney+'],['stan','Stan'],['binge','Binge'],['paramount','Paramount+'],['hbo','HBO'],['max','HBO'],['apple','Apple TV+'],['prime','Prime'],['amazon','Prime']];
 const wPlat=ps=>{for(const p of ps||[]){const l=p.toLowerCase();const m=PMAP.find(([k])=>l.includes(k));if(m)return m[1];}return'';};
 function wFields(d){return{title:d.title,type:d.type==='tv'?'tv':'movie',genre:wGenre(d.genres),genres:d.genres||[],year:d.year||'',poster:d.poster||'',plot:d.plot||'',runtime:d.runtime||null,seasons:d.seasons||null,providers:d.providers||[],trailer:d.trailer||'',imdbId:d.imdbId||'',rt:d.rt||'',imdb:d.imdb||'',tmdbId:d.tmdbId};}
-function wSearch(q){clearTimeout(wsT);const box=document.getElementById('wsug');q=q.trim();if(q.length<2||!wWorker){box.innerHTML='';return;}
+function wSearch(q){clearTimeout(wsT);const box=document.getElementById('wsug');q=q.trim();if(q.length<2){box.innerHTML='';return;}if(!wWorker){box.innerHTML=`<div class="wsug-i" onclick="addWatch()"><div><div class="wsug-t">Add “${esc(q)}”</div></div></div>`;return;}
   wsT=setTimeout(async()=>{const n=++wsSeq;try{const j=await wApi({watchSearch:q});if(n!==wsSeq)return;window._wres=j.results||[];
-    box.innerHTML=_wres.map((r,k)=>`<div class="wsug-i" onclick="wPick(${k})">${r.poster?`<img src="${esc(r.poster)}">`:'<div class="np"></div>'}<div><div class="wsug-t">${esc(r.title)}</div><div class="wsug-m">${r.type==='tv'?'TV':'Movie'}${r.year?' · '+esc(r.year):''}</div></div></div>`).join('')||'<div class="wsug-m" style="padding:8px 4px">No matches. Tap + to add it as typed.</div>';}catch(e){box.innerHTML='';}},350);}
+    const addTyped=`<div class="wsug-i" onclick="addWatch()"><div class="np" style="display:flex;align-items:center;justify-content:center;font-size:20px;background:#F0EAFF;color:#5B21B6">+</div><div><div class="wsug-t">Add “${esc(q)}” as typed</div><div class="wsug-m">You can set the details later</div></div></div>`;
+    box.innerHTML=_wres.map((r,k)=>`<div class="wsug-i" onclick="wPick(${k})">${r.poster?`<img src="${esc(r.poster)}">`:'<div class="np"></div>'}<div><div class="wsug-t">${esc(r.title)}</div><div class="wsug-m">${r.type==='tv'?'TV':'Movie'}${r.year?' · '+esc(r.year):''}</div></div></div>`).join('')+addTyped;}catch(e){box.innerHTML=`<div class="wsug-m" style="padding:6px 4px">Can't search right now (offline?).</div>`+addTyped;}},350);}
 async function wPick(k){const r=_wres[k];const box=document.getElementById('wsug');box.innerHTML='<div class="wsug-m" style="padding:8px 4px">Loading…</div>';
   let d=null;try{d=await wApi({watchDetail:{id:r.id,type:r.type}});}catch(e){}
   box.innerHTML='';
@@ -589,7 +590,7 @@ function openSheet(title,html,cb){document.getElementById('sheet-title').textCon
 function closeSheet(){document.getElementById('esheet').classList.remove('open');document.getElementById('ebdrop').classList.remove('open');sheetCb=null;}
 
 // ---------- v2.1: settings, hidden tabs, badges ----------
-const VER='2.2',ALLSECS=['grocery','cook','watch','todo','shared'];let hiddenTabs={};
+const VER='2.3',ALLSECS=['grocery','cook','watch','todo','shared'];let hiddenTabs={};
 function applyHidden(){SECS.length=0;ALLSECS.forEach(s=>{const b=document.getElementById('tb-'+s),h=!!hiddenTabs[s];if(b)b.style.display=h?'none':'';if(!h)SECS.push(s);});
   const cur=document.querySelector('.section-view.active');const curName=cur&&cur.id.replace('sv-','');if(curName&&hiddenTabs[curName])goSec('grocery',document.getElementById('tb-grocery'));curSec=Math.max(0,SECS.indexOf(curName));}
 function updBadges(){const set=(s,n)=>{const b=document.getElementById('tb-'+s);if(!b)return;let e=b.querySelector('.tbadge');if(!n){if(e)e.remove();return;}if(!e){e=document.createElement('span');e.className='tbadge';b.appendChild(e);}e.textContent=n>99?'99+':n;};
@@ -599,7 +600,7 @@ function openSettings(){const open=localStorage.getItem('listit_open')||'grocery
   openSheet('Settings',`<div style="max-height:62vh;overflow-y:auto">
   <div class="set-lbl">Who's using this phone</div><div class="set-row"><span>I am</span><span class="seg">${['scott','leigh'].map(u=>`<button class="${me===u?'on':''}" onclick="setMe('${u}')">${UN[u]}</button>`).join('')}</span></div>
   <div class="set-lbl">Tabs (both phones)</div>${[['todo','Buy / Do'],['shared','Shared']].map(([k,l])=>`<div class="set-row"><span>${l}</span><span class="seg"><button class="${hiddenTabs[k]?'':'on'}" onclick="dbSet('settings/hidden/${k}',null);setTimeout(openSettings,200)">Show</button><button class="${hiddenTabs[k]?'on':''}" onclick="dbSet('settings/hidden/${k}',true);setTimeout(openSettings,200)">Hide</button></span></div>`).join('')}
-  <div class="set-lbl">This phone</div><div class="set-row"><span>Open on</span><span class="seg">${[['grocery','Grocery'],['cook','Cook'],['watch','Watch']].map(([k,l])=>`<button class="${open===k?'on':''}" onclick="localStorage.setItem('listit_open','${k}');openSettings()">${l}</button>`).join('')}</span></div>
+  <div class="set-lbl">This phone</div><div class="set-row"><span>Open on</span><span class="seg">${[['grocery','Shop'],['cook','Cook'],['watch','Watch']].map(([k,l])=>`<button class="${open===k?'on':''}" onclick="localStorage.setItem('listit_open','${k}');openSettings()">${l}</button>`).join('')}</span></div>
   <div class="set-lbl">Lookups</div><div class="set-row"><span>Recipe import &amp; Watch search</span><span id="set-imp" style="font-size:14px;color:#6B7280">Checking…</span></div>
   <div class="set-lbl">App</div><div class="set-row"><span>Version ${VER}</span><button class="wd-tog" onclick="forceUpdate()">Check for update</button></div></div>`,null);
   document.getElementById('sheet-save').textContent='Done';
@@ -616,6 +617,12 @@ async function forceUpdate(){try{const rs=await navigator.serviceWorker.getRegis
   sh.addEventListener('touchmove',e=>{if(y0==null)return;dy=e.touches[0].clientY-y0;if(dy>8){drag=true;sh.style.transition='none';sh.style.transform=`translateY(${dy}px)`;if(e.cancelable)e.preventDefault();}},{passive:false});
   sh.addEventListener('touchend',()=>{if(y0==null)return;sh.style.transition='';if(drag&&dy>90){closeSheet();}sh.style.transform='';y0=null;drag=false;});
 })();
+
+function wPickForUs(){const all=Object.entries(live.watch||{}).filter(([,it])=>(it.status||'towatch')!=='watched');
+  let pool=all.filter(([,it])=>it.want&&it.want.scott&&it.want.leigh);if(pool.length<2)pool=all;
+  if(!pool.length){alert('Nothing left to watch!');return;}
+  pool.sort((a,b)=>wScore(b[1])-wScore(a[1]));const top=pool.slice(0,Math.min(5,pool.length));
+  const [id]=top[Math.floor(Math.random()*top.length)];editWatch(id);}
 </script>
 </body>
 </html>

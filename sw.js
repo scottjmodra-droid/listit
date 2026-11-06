@@ -1,4 +1,4 @@
-const CACHE='listit-v7';
+const CACHE='listit-v8';
 
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./'])));
