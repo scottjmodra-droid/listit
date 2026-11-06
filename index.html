@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="List it">
-<meta name="version" content="2.3">
+<meta name="version" content="2.4">
 <meta name="theme-color" content="#2433B0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -283,7 +283,7 @@ button,input,select,textarea{font-family:inherit}
       <div class="user-chip-dot" id="chip-dot"></div>
       <span class="user-chip-name" id="chip-name"></span>
     </div>
-    <span id="ver-tag">v2.3</span><button class="gear" onclick="openSettings()" aria-label="Settings">⚙︎</button>
+    <span id="ver-tag">v2.4</span><button class="gear" onclick="openSettings()" aria-label="Settings">⚙︎</button>
   </div>
   <div class="tab-bar" id="tab-bar">
     <button class="tab-btn ag" id="tb-grocery" onclick="goSec('grocery',this)"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Shop</button>
@@ -386,15 +386,21 @@ function submitPw(){const v=document.getElementById('pw-input').value.trim().toL
 function hide(id){document.getElementById(id).style.display='none';}
 
 function initFirebase(cfg){
+  // Show the saved list straight away, before anything else loads.
+  try{const c=JSON.parse(localStorage.getItem('listit_cache')||'{}');if(Object.keys(c).length){Object.assign(live,c);renderAll();}}catch(e){}
+  if(!me){document.getElementById('user-overlay').style.display='flex';}else launchApp();
+  if(typeof firebase==='undefined'){setTimeout(()=>initFirebase2(cfg),3000);return;}
+  initFirebase2(cfg);
+}
+function initFirebase2(cfg){
+  if(typeof firebase==='undefined'){setTimeout(()=>initFirebase2(cfg),3000);return;}
   if(!firebase.apps.length)firebase.initializeApp(cfg);
   db=firebase.database();
-  try{const c=JSON.parse(localStorage.getItem('listit_cache')||'{}');if(Object.keys(c).length){Object.assign(live,c);renderAll();}}catch(e){}
   // The database only answers apps that have identified themselves, so do that quietly first.
   // No email or password is involved. If it fails (no connection), try again shortly.
   let listening=false;
   const connect=()=>firebase.auth().signInAnonymously().catch(e=>{console.warn('sign-in',e&&e.code);setTimeout(connect,5000);});
   firebase.auth().onAuthStateChanged(u=>{if(u&&!listening){listening=true;setupListeners();}else if(!u)connect();});
-  if(!me){document.getElementById('user-overlay').style.display='flex';}else launchApp();
 }
 function renderAll(){['grocery','cook','watch','todo','shared'].forEach(renderSec);rFavStrip();}
 function pickUser(u){me=u;localStorage.setItem('listit_user',u);hide('user-overlay');launchApp();}
@@ -418,10 +424,12 @@ function setupListeners(){
   // old Cook list retired: Cook tab now shows Cook It. Clear the old items once.
   if(!localStorage.getItem('listit_cook_cleared')){db.ref('cook').remove().then(()=>localStorage.setItem('listit_cook_cleared','1')).catch(()=>{});}
   db.ref('cookit/config/worker').on('value',x=>{wWorker=x.val()||null;});
-  db.ref('settings/hidden').on('value',x=>{hiddenTabs=x.val()||{};applyHidden();});
+  db.ref('.info/connected').on('value',x=>{if(x.val())flushOutbox();});
+  db.ref('settings/hidden').on('value',x=>{hiddenTabs=x.val()||{};try{localStorage.setItem('listit_hidden',JSON.stringify(hiddenTabs));}catch(e){}applyHidden();});
   ['grocery','watch','todo','shared'].forEach(s=>{
     db.ref(s).on('value',snap=>{
       live[s]=snap.val()||{};
+      outbox.filter(j=>j.p.split('/')[0]===s).forEach(j=>{const k=j.p.split('/');let o=live;for(let i=0;i<k.length-1;i++){if(o[k[i]]==null||typeof o[k[i]]!=='object')o[k[i]]={};o=o[k[i]];}if(j.v==null)delete o[k[k.length-1]];else o[k[k.length-1]]=j.v;});
       try{const c=JSON.parse(localStorage.getItem('listit_cache')||'{}');c[s]=live[s];localStorage.setItem('listit_cache',JSON.stringify(c));}catch(e){}
       renderSec(s);
     });
@@ -432,9 +440,18 @@ function setupListeners(){
     rFavStrip();rGrocery();
   });
 }
-function dbSet(p,v){db.ref(p).set(v);}
-function dbDel(p){db.ref(p).remove();}
-function dbNew(s,o){const id='i'+Date.now()+Math.random().toString(36).slice(2,5);db.ref(s+'/'+id).set(o);return id;}
+// Writes show on screen straight away, and are kept on the phone until the database confirms them,
+// so ticking things off with no signal works and syncs later (even if the app is closed in between).
+let outbox=[];try{outbox=JSON.parse(localStorage.getItem('listit_outbox')||'[]');}catch(e){}
+const saveOutbox=()=>{try{localStorage.setItem('listit_outbox',JSON.stringify(outbox));}catch(e){}};
+function applyLocal(p,v){const k=p.split('/'),top=k[0];if(!(top in live))return;let o=live;for(let i=0;i<k.length-1;i++){if(o[k[i]]==null||typeof o[k[i]]!=='object')o[k[i]]={};o=o[k[i]];}if(v==null)delete o[k[k.length-1]];else o[k[k.length-1]]=v;
+  try{const c=JSON.parse(localStorage.getItem('listit_cache')||'{}');c[top]=live[top];localStorage.setItem('listit_cache',JSON.stringify(c));}catch(e){}renderSec(top);}
+function dbWrite(p,v){applyLocal(p,v);const job={p,v,t:Date.now()+Math.random()};outbox.push(job);saveOutbox();
+  if(db)db.ref(p).set(v==null?null:v).then(()=>{outbox=outbox.filter(j=>j.t!==job.t);saveOutbox();}).catch(()=>{});}
+function flushOutbox(){if(!db||!outbox.length)return;outbox.slice().forEach(job=>db.ref(job.p).set(job.v==null?null:job.v).then(()=>{outbox=outbox.filter(j=>j.t!==job.t);saveOutbox();}).catch(()=>{}));}
+function dbSet(p,v){dbWrite(p,v);}
+function dbDel(p){dbWrite(p,null);}
+function dbNew(s,o){const id='i'+Date.now()+Math.random().toString(36).slice(2,5);dbWrite(s+'/'+id,o);return id;}
 function renderSec(s){setTimeout(updBadges,0);if(s==='grocery')rGrocery();else if(s==='cook')return;else if(s==='watch')rWatch();else if(s==='todo')rTodo();else if(s==='shared')rShared();}
 
 const SECS=['grocery','cook','watch','todo','shared'];let curSec=0;
@@ -578,7 +595,7 @@ function editShared(id){const it=live.shared[id];openSheet('Edit',`<input class=
 
 function rm(sec,id){const it=live[sec][id];if(!it)return;undoData={sec,id,it:JSON.parse(JSON.stringify(it))};dbDel(`${sec}/${id}`);showUndo();}
 function showUndo(){clearTimeout(undoTimer);document.getElementById('utost').classList.remove('hide');undoTimer=setTimeout(()=>{document.getElementById('utost').classList.add('hide');undoData=null;},3000);}
-function doUndo(){if(!undoData)return;clearTimeout(undoTimer);db.ref(`${undoData.sec}/${undoData.id}`).set(undoData.it);document.getElementById('utost').classList.add('hide');undoData=null;}
+function doUndo(){if(!undoData)return;clearTimeout(undoTimer);dbSet(`${undoData.sec}/${undoData.id}`,undoData.it);document.getElementById('utost').classList.add('hide');undoData=null;}
 
 function updateOnlineStatus(){document.getElementById('offline-bar').classList.toggle('show',!navigator.onLine);}
 window.addEventListener('online',updateOnlineStatus);
@@ -590,7 +607,7 @@ function openSheet(title,html,cb){document.getElementById('sheet-title').textCon
 function closeSheet(){document.getElementById('esheet').classList.remove('open');document.getElementById('ebdrop').classList.remove('open');sheetCb=null;}
 
 // ---------- v2.1: settings, hidden tabs, badges ----------
-const VER='2.3',ALLSECS=['grocery','cook','watch','todo','shared'];let hiddenTabs={};
+const VER='2.4',ALLSECS=['grocery','cook','watch','todo','shared'];let hiddenTabs={};
 function applyHidden(){SECS.length=0;ALLSECS.forEach(s=>{const b=document.getElementById('tb-'+s),h=!!hiddenTabs[s];if(b)b.style.display=h?'none':'';if(!h)SECS.push(s);});
   const cur=document.querySelector('.section-view.active');const curName=cur&&cur.id.replace('sv-','');if(curName&&hiddenTabs[curName])goSec('grocery',document.getElementById('tb-grocery'));curSec=Math.max(0,SECS.indexOf(curName));}
 function updBadges(){const set=(s,n)=>{const b=document.getElementById('tb-'+s);if(!b)return;let e=b.querySelector('.tbadge');if(!n){if(e)e.remove();return;}if(!e){e=document.createElement('span');e.className='tbadge';b.appendChild(e);}e.textContent=n>99?'99+':n;};
@@ -623,6 +640,8 @@ function wPickForUs(){const all=Object.entries(live.watch||{}).filter(([,it])=>(
   if(!pool.length){alert('Nothing left to watch!');return;}
   pool.sort((a,b)=>wScore(b[1])-wScore(a[1]));const top=pool.slice(0,Math.min(5,pool.length));
   const [id]=top[Math.floor(Math.random()*top.length)];editWatch(id);}
+
+try{hiddenTabs=JSON.parse(localStorage.getItem('listit_hidden')||'{}');ALLSECS.forEach(t=>{const b=document.getElementById('tb-'+t);if(b&&hiddenTabs[t])b.style.display='none';});SECS.length=0;ALLSECS.forEach(t=>{if(!hiddenTabs[t])SECS.push(t);});}catch(e){}
 </script>
 </body>
 </html>
