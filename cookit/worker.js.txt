@@ -1,5 +1,5 @@
 // Cook It import helper — paste this whole file into a Cloudflare Worker.
-// Needs one secret: ANTHROPIC_API_KEY (Settings → Variables and Secrets).
+// Secrets (Settings → Variables and Secrets): ANTHROPIC_API_KEY, TMDB_API_KEY, OMDB_API_KEY
 
 const APP_CODE = 'cindy';
 const MODEL = 'claude-sonnet-5-5';
@@ -20,7 +20,7 @@ async function claude(env, content) {
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-    body: JSON.stringify({ model: MODEL, max_tokens: 4000, messages: [{ role: 'user', content }] }),
+    body: JSON.stringify({ model: MODEL, max_tokens: 4000, temperature: 0, messages: [{ role: 'user', content }] }),
   });
   const j = await r.json();
   if (!r.ok) throw new Error((j.error && j.error.message) || 'API error ' + r.status);
@@ -41,6 +41,49 @@ async function pageText(url) {
   return { og, text: html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').slice(0, 40000) };
 }
 
+
+// ---- To Watch lookups (TMDB for search/posters/where to watch, OMDb for Rotten Tomatoes + IMDb) ----
+async function tmdb(env, path) {
+  const sep = path.includes('?') ? '&' : '?';
+  const r = await fetch(`https://api.themoviedb.org/3${path}${sep}api_key=${env.TMDB_API_KEY}`);
+  if (!r.ok) throw new Error('TMDB ' + r.status);
+  return r.json();
+}
+const IMG = p => p ? 'https://image.tmdb.org/t/p/w185' + p : '';
+async function watchSearch(env, q) {
+  const j = await tmdb(env, `/search/multi?query=${encodeURIComponent(q)}&include_adult=false&region=AU&language=en-AU`);
+  return (j.results || []).filter(x => x.media_type === 'movie' || x.media_type === 'tv').slice(0, 8).map(x => ({
+    id: x.id, type: x.media_type, title: x.title || x.name,
+    year: (x.release_date || x.first_air_date || '').slice(0, 4), poster: IMG(x.poster_path),
+  }));
+}
+async function watchDetail(env, id, type) {
+  const d = await tmdb(env, `/${type}/${id}?append_to_response=external_ids,watch/providers,videos&language=en-AU`);
+  const au = (d['watch/providers'] && d['watch/providers'].results && d['watch/providers'].results.AU) || {};
+  const providers = (au.flatrate || []).map(p => p.provider_name);
+  const vid = (d.videos && d.videos.results || []).find(v => v.site === 'YouTube' && v.type === 'Trailer');
+  const imdbId = d.imdb_id || (d.external_ids && d.external_ids.imdb_id) || '';
+  let rt = '', imdb = '';
+  if (imdbId && env.OMDB_API_KEY) {
+    try {
+      const o = await (await fetch(`https://www.omdbapi.com/?i=${imdbId}&apikey=${env.OMDB_API_KEY}`)).json();
+      imdb = o.imdbRating && o.imdbRating !== 'N/A' ? o.imdbRating : '';
+      const r = (o.Ratings || []).find(x => x.Source === 'Rotten Tomatoes');
+      rt = r ? r.Value : '';
+    } catch (e) {}
+  }
+  return {
+    tmdbId: id, type, title: d.title || d.name,
+    year: (d.release_date || d.first_air_date || '').slice(0, 4),
+    poster: IMG(d.poster_path), plot: d.overview || '',
+    genres: (d.genres || []).map(g => g.name),
+    runtime: d.runtime || (d.episode_run_time && d.episode_run_time[0]) || null,
+    seasons: d.number_of_seasons || null,
+    providers, trailer: vid ? 'https://www.youtube.com/watch?v=' + vid.key : '',
+    imdbId, rt, imdb,
+  };
+}
+
 export default {
   async fetch(req, env) {
     if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
@@ -49,6 +92,8 @@ export default {
       const b = await req.json();
       if (b.code !== APP_CODE) return json({ error: 'Wrong code' }, 403);
 
+      if (b.watchSearch) return json({ results: await watchSearch(env, b.watchSearch) });
+      if (b.watchDetail) return json(await watchDetail(env, b.watchDetail.id, b.watchDetail.type));
       if (b.estimate) {
         const out = await claude(env, `Estimate calories per serving for this recipe serving ${b.estimate.servings}. Ingredients:\n${b.estimate.ingredients.join('\n')}\nReturn ONLY JSON: {"calsPerServing":number}`);
         return json({ calsPerServing: Math.round(out.calsPerServing) });
@@ -58,6 +103,21 @@ export default {
         const out = await claude(env, `Extract the recipe from this webpage content. Also include "imageUrl": the full URL of the main photo of the finished dish if one is in the content, else "".\n${RULES}\n\nPAGE:\n${text}`);
         out.imageUrl = out.imageUrl || og || '';
         if (out.imageUrl && !/^https?:/.test(out.imageUrl)) out.imageUrl = new URL(out.imageUrl, b.url).href;
+        // Download the photo here so the app keeps its own copy (many sites block other apps loading their images)
+        if (out.imageUrl) {
+          try {
+            const ir = await fetch(out.imageUrl, { headers: { 'User-Agent': 'Mozilla/5.0', 'Referer': b.url } });
+            const type = ir.headers.get('content-type') || '';
+            if (ir.ok && type.startsWith('image/')) {
+              const buf = new Uint8Array(await ir.arrayBuffer());
+              if (buf.length < 4000000) {
+                let bin = '';
+                for (let i = 0; i < buf.length; i += 32768) bin += String.fromCharCode(...buf.subarray(i, i + 32768));
+                out.imageData = `data:${type.split(';')[0]};base64,${btoa(bin)}`;
+              }
+            }
+          } catch (e) {}
+        }
         return json(out);
       }
       if (b.image) {

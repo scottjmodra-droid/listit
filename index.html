@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="List it">
-<meta name="version" content="1.9">
+<meta name="version" content="2.0">
 <meta name="theme-color" content="#2433B0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -149,6 +149,20 @@ button,input,select,textarea{font-family:inherit}
 .t-cook .section-title{color:#EA580C}
 .tab-btn.ak{color:#EA580C}.tab-btn.ak::after{width:32px;background:#EA580C}
 .add-area.ck:focus-within{border-color:#EA580C}
+.wsug-i{display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px solid #F0F1F6;cursor:pointer}
+.wsug-i img,.wsug-i .np{width:34px;height:50px;border-radius:5px;object-fit:cover;background:#EEE;flex:none}
+.wsug-t{font-size:15px;color:#1A1E5C;font-weight:600}.wsug-m{font-size:12px;color:#6B7280}
+.wposter{width:46px;height:68px;border-radius:7px;object-fit:cover;flex:none;background:#EDE7FB;display:flex;align-items:center;justify-content:center;font-size:20px}
+.p-rt{background:#FDECEA;color:#B42318;font-weight:700}.p-imdb{background:#FEF6D8;color:#8A6100;font-weight:700}
+.wtools{display:flex;gap:8px;margin:0 0 8px;flex-wrap:wrap}
+.wtool{font-size:13px;padding:6px 12px;border-radius:99px;background:#fff;border:1.5px solid #DDE0EC;color:#5B21B6;font-weight:600;cursor:pointer}
+.wdots{display:flex;gap:3px;margin-left:2px}.wdots i{width:9px;height:9px;border-radius:50%;display:block}
+.wd-top{display:flex;gap:12px;margin-bottom:12px}.wd-top img{width:90px;height:134px;border-radius:9px;object-fit:cover}
+.wd-plot{font-size:14px;color:#374151;line-height:1.45;margin:6px 0 10px}
+.wd-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid #F0F1F6;font-size:15px;color:#1A1E5C}
+.wd-stars button{font-size:24px;color:#DDD6CC;background:none;border:0;padding:0 1px;cursor:pointer}.wd-stars button.on{color:#F2A900}
+.wd-tog{padding:6px 12px;border-radius:99px;border:1.5px solid #DDE0EC;background:#fff;font-size:13px;font-weight:600;cursor:pointer}
+
 .add-btn.ck{background:#EA580C}
 .act-b.eck{color:#EA580C}
 .recipe-card{background:#fff;border-radius:14px;padding:12px;margin-bottom:7px;border:0.5px solid #E8EAF0;display:flex;gap:10px;align-items:flex-start;position:relative}
@@ -252,7 +266,7 @@ button,input,select,textarea{font-family:inherit}
       <div class="user-chip-dot" id="chip-dot"></div>
       <span class="user-chip-name" id="chip-name"></span>
     </div>
-    <span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:500;letter-spacing:0.03em">v1.9</span>
+    <span style="font-size:10px;color:rgba(255,255,255,0.4);font-weight:500;letter-spacing:0.03em">v2.0</span>
   </div>
   <div class="tab-bar" id="tab-bar">
     <button class="tab-btn ag" id="tb-grocery" onclick="goSec('grocery',this)"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Grocery</button>
@@ -280,7 +294,8 @@ button,input,select,textarea{font-family:inherit}
     <div class="section-header t-watch"><div class="section-title">To Watch</div></div>
     <div class="section-scroll">
       <div class="add-area w">
-        <div class="add-row"><input class="add-input" id="wi" placeholder="Title…" onkeydown="if(event.key==='Enter')addWatch()"><button class="add-btn w" onclick="addWatch()">+</button></div>
+        <div class="add-row"><input class="add-input" id="wi" placeholder="Search a show or movie…" autocomplete="off" oninput="wSearch(this.value)" onkeydown="if(event.key==='Enter')addWatch()"><button class="add-btn w" onclick="addWatch()">+</button></div>
+        <div id="wsug"></div>
         <div class="add-extras">
           <select class="add-select" id="w-type"><option value="tv">TV show</option><option value="movie">Movie</option></select>
           <select class="add-select" id="w-genre"><option value="comedy">Comedy</option><option value="drama">Drama</option><option value="thriller">Thriller</option><option value="horror">Horror</option><option value="action">Action</option><option value="documentary">Doco</option><option value="other">Other</option></select>
@@ -297,10 +312,11 @@ button,input,select,textarea{font-family:inherit}
         <div class="fchip" data-f="g:horror" onclick="wf(this,'g:horror')">Horror</div>
         <div class="fchip" data-f="g:action" onclick="wf(this,'g:action')">Action</div>
         <div class="fchip" data-f="g:documentary" onclick="wf(this,'g:documentary')">Doco</div>
+        <div class="fchip" data-f="w:both" onclick="wf(this,'w:both')">We both want</div>
         <div class="fchip" data-f="s:watching" onclick="wf(this,'s:watching')">Watching</div>
         <div class="fchip" data-f="s:watched" onclick="wf(this,'s:watched')">Watched</div>
       </div>
-      <div id="watch-list"></div>
+      <div id="wtools"></div><div id="watch-list"></div>
     </div>
   </div>
 
@@ -384,6 +400,7 @@ function switchUser(){const n=me==='scott'?'leigh':'scott';if(confirm('Switch to
 function setupListeners(){
   // old Cook list retired: Cook tab now shows Cook It. Clear the old items once.
   if(!localStorage.getItem('listit_cook_cleared')){db.ref('cook').remove().then(()=>localStorage.setItem('listit_cook_cleared','1')).catch(()=>{});}
+  db.ref('cookit/config/worker').on('value',x=>{wWorker=x.val()||null;});
   ['grocery','watch','todo','shared'].forEach(s=>{
     db.ref(s).on('value',snap=>{
       live[s]=snap.val()||{};
@@ -450,24 +467,59 @@ function editCook(id){
   });
 }
 
-function addWatch(){const t=document.getElementById('wi').value.trim();if(!t)return;dbNew('watch',{title:t,type:document.getElementById('w-type').value,genre:document.getElementById('w-genre').value,platform:document.getElementById('w-plat').value||'',status:'towatch',by:me,at:Date.now()});document.getElementById('wi').value='';document.getElementById('w-plat').value='';}
+function addWatch(){const t=document.getElementById('wi').value.trim();if(!t)return;document.getElementById('wsug').innerHTML='';dbNew('watch',{title:t,want:{[me]:true},type:document.getElementById('w-type').value,genre:document.getElementById('w-genre').value,platform:document.getElementById('w-plat').value||'',status:'towatch',by:me,at:Date.now()});document.getElementById('wi').value='';document.getElementById('w-plat').value='';}
 function wf(chip,f){if(f==='all'){wFilters.clear();wFilters.add('all');document.querySelectorAll('#wfilters .fchip').forEach(c=>c.classList.remove('on'));chip.classList.add('on');}else{wFilters.delete('all');document.querySelector('[data-f="all"]').classList.remove('on');if(wFilters.has(f)){wFilters.delete(f);chip.classList.remove('on');if(!wFilters.size){wFilters.add('all');document.querySelector('[data-f="all"]').classList.add('on');}}else{wFilters.add(f);chip.classList.add('on');}}rWatch();}
-function wMatch(it){if(wFilters.has('all'))return true;const tf=[...wFilters].filter(x=>x.startsWith('t:')),gf=[...wFilters].filter(x=>x.startsWith('g:')),sf=[...wFilters].filter(x=>x.startsWith('s:'));if(tf.length&&!tf.some(x=>x==='t:'+it.type))return false;if(gf.length&&!gf.some(x=>x==='g:'+it.genre))return false;if(sf.length&&!sf.some(x=>x==='s:'+(it.status||'towatch')))return false;return true;}
+function wMatch(it){if(wFilters.has('all'))return true;const tf=[...wFilters].filter(x=>x.startsWith('t:')),gf=[...wFilters].filter(x=>x.startsWith('g:')),sf=[...wFilters].filter(x=>x.startsWith('s:'));if(tf.length&&!tf.some(x=>x==='t:'+it.type))return false;if(gf.length&&!gf.some(x=>x==='g:'+it.genre))return false;if(sf.length&&!sf.some(x=>x==='s:'+(it.status||'towatch')))return false;if(wFilters.has('w:both')&&!(it.want&&it.want.scott&&it.want.leigh))return false;return true;}
 function rWatch(){
-  const items=Object.entries(live.watch||{}).filter(([,it])=>wMatch(it)),el=document.getElementById('watch-list');
+  const all=Object.entries(live.watch||{}),items=all.filter(([,it])=>wMatch(it)),el=document.getElementById('watch-list');
+  const miss=all.filter(([,it])=>!it.tmdbId&&!it.noMatch).length;
+  document.getElementById('wtools').innerHTML=`<div class="wtools"><button class="wtool" onclick="wSort=wSort==='score'?'new':'score';rWatch()">Sort: ${wSort==='score'?'Best rated':'Newest'}</button>${miss?`<button class="wtool" id="wbf" onclick="wBackfill()">🔎 Look up ${miss} without info</button>`:''}</div>`;
   if(!items.length){el.innerHTML='<div class="empty"><div class="empty-icon">🎬</div><div class="empty-text">Nothing to watch yet</div></div>';return;}
   const ord=['watching','towatch','watched'];
-  items.sort((a,b)=>{const sa=ord.indexOf(a[1].status||'towatch'),sb=ord.indexOf(b[1].status||'towatch');return sa!==sb?sa-sb:(b[1].at||0)-(a[1].at||0);});
-  el.innerHTML=items.map(([id,it])=>{const st=it.status||'towatch';
-    return `<div class="item" id="wi-${id}" style="user-select:none"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div><div class="item-body" style="cursor:pointer" onclick="editWatch('${id}')"><div class="item-name">${esc(it.title)}</div><div class="item-sub"><span class="pill p-tag">${it.type==='tv'?'TV':'Movie'}</span><span class="pill p-tag">${GLBL[it.genre]||it.genre}</span>${it.platform?`<span class="pill p-tag">${esc(it.platform)}</span>`:''}<span class="pill p-${st}" style="cursor:pointer" onclick="event.stopPropagation();pickStatus('${id}')">${WLBL[st]}</span></div></div><div class="act-row"><button class="act-b del" onclick="rm('watch','${id}')">✕</button></div></div>`;
-  }).join('');
-  items.forEach(([id])=>addLongPress(id));
+  items.sort((a,b)=>{const sa=ord.indexOf(a[1].status||'towatch'),sb=ord.indexOf(b[1].status||'towatch');if(sa!==sb)return sa-sb;return wSort==='score'?wScore(b[1])-wScore(a[1]):(b[1].at||0)-(a[1].at||0);});
+  el.innerHTML=items.map(([id,it])=>{const st=it.status||'towatch',w=it.want||{};
+    return `<div class="item" id="wi-${id}" style="user-select:none"><div class="user-bar" style="background:${UC[it.by]||'#C0C4D6'}"></div>${it.poster?`<img class="wposter" src="${esc(it.poster)}" loading="lazy">`:'<div class="wposter">🎬</div>'}<div class="item-body" style="cursor:pointer" onclick="editWatch('${id}')"><div class="item-name">${esc(it.title)}${it.year?` <span style="color:#9CA3AF;font-size:13px">${esc(it.year)}</span>`:''}</div><div class="item-sub">${it.rt?`<span class="pill p-rt">🍅 ${esc(it.rt)}</span>`:''}${it.imdb?`<span class="pill p-imdb">IMDb ${esc(it.imdb)}</span>`:''}<span class="pill p-tag">${it.type==='tv'?'TV':'Movie'}</span><span class="pill p-tag">${GLBL[it.genre]||esc(it.genre||'')}</span>${it.platform?`<span class="pill p-tag">${esc(it.platform)}</span>`:''}<span class="pill p-${st}" style="cursor:pointer" onclick="event.stopPropagation();pickStatus('${id}')">${WLBL[st]}</span><span class="wdots">${w.scott?`<i style="background:${UC.scott}"></i>`:''}${w.leigh?`<i style="background:${UC.leigh}"></i>`:''}</span>${wMyStars(it)}</div></div><div class="act-row"><button class="act-b del" onclick="rm('watch','${id}')">✕</button></div></div>`;}).join('');
 }
+let wSort='new',wsT=null,wsSeq=0;
+const wScore=it=>it.rt?parseInt(it.rt):it.imdb?parseFloat(it.imdb)*10:-1;
+const wMyStars=it=>{const v=Object.values(it.ratings||{}).filter(Boolean);return v.length?`<span class="pill p-tag">★ ${Math.round(v.reduce((a,b)=>a+b,0)/v.length*10)/10}</span>`:'';};
+let wWorker=null;
+function wApi(body){if(!wWorker)return Promise.reject(new Error('Lookup not set up'));return fetch(wWorker,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:PW,...body})}).then(r=>r.json()).then(j=>{if(j.error)throw new Error(j.error);return j;});}
+const GMAP={Comedy:'comedy',Drama:'drama',Thriller:'thriller',Crime:'thriller',Mystery:'thriller',Horror:'horror',Action:'action',Adventure:'action','Action & Adventure':'action','Science Fiction':'action','Sci-Fi & Fantasy':'action',War:'action',Documentary:'documentary',Animation:'comedy',Family:'comedy',Romance:'drama',Reality:'other'};
+const wGenre=gs=>{for(const g of gs||[])if(GMAP[g])return GMAP[g];return'other';};
+const PMAP=[['netflix','Netflix'],['disney','Disney+'],['stan','Stan'],['binge','Binge'],['paramount','Paramount+'],['hbo','HBO'],['max','HBO'],['apple','Apple TV+'],['prime','Prime'],['amazon','Prime']];
+const wPlat=ps=>{for(const p of ps||[]){const l=p.toLowerCase();const m=PMAP.find(([k])=>l.includes(k));if(m)return m[1];}return'';};
+function wFields(d){return{title:d.title,type:d.type==='tv'?'tv':'movie',genre:wGenre(d.genres),genres:d.genres||[],year:d.year||'',poster:d.poster||'',plot:d.plot||'',runtime:d.runtime||null,seasons:d.seasons||null,providers:d.providers||[],trailer:d.trailer||'',imdbId:d.imdbId||'',rt:d.rt||'',imdb:d.imdb||'',tmdbId:d.tmdbId};}
+function wSearch(q){clearTimeout(wsT);const box=document.getElementById('wsug');q=q.trim();if(q.length<2||!wWorker){box.innerHTML='';return;}
+  wsT=setTimeout(async()=>{const n=++wsSeq;try{const j=await wApi({watchSearch:q});if(n!==wsSeq)return;window._wres=j.results||[];
+    box.innerHTML=_wres.map((r,k)=>`<div class="wsug-i" onclick="wPick(${k})">${r.poster?`<img src="${esc(r.poster)}">`:'<div class="np"></div>'}<div><div class="wsug-t">${esc(r.title)}</div><div class="wsug-m">${r.type==='tv'?'TV':'Movie'}${r.year?' · '+esc(r.year):''}</div></div></div>`).join('')||'<div class="wsug-m" style="padding:8px 4px">No matches. Tap + to add it as typed.</div>';}catch(e){box.innerHTML='';}},350);}
+async function wPick(k){const r=_wres[k];const box=document.getElementById('wsug');box.innerHTML='<div class="wsug-m" style="padding:8px 4px">Adding…</div>';
+  try{const d=await wApi({watchDetail:{id:r.id,type:r.type}});const f=wFields(d);dbNew('watch',{...f,platform:wPlat(d.providers),status:'towatch',want:{[me]:true},by:me,at:Date.now()});}
+  catch(e){dbNew('watch',{title:r.title,type:r.type==='tv'?'tv':'movie',genre:'other',year:r.year,poster:r.poster,tmdbId:r.id,platform:'',status:'towatch',want:{[me]:true},by:me,at:Date.now()});}
+  box.innerHTML='';document.getElementById('wi').value='';}
+async function wBackfill(){const b=document.getElementById('wbf');const todo=Object.entries(live.watch||{}).filter(([,it])=>!it.tmdbId&&!it.noMatch);let n=0;
+  for(const[id,it]of todo){n++;if(b)b.textContent=`Looking up ${n} of ${todo.length}…`;
+    try{const j=await wApi({watchSearch:it.title});const rs=j.results||[];const m=rs.find(r=>(r.type==='tv'?'tv':'movie')===it.type&&r.title.toLowerCase()===it.title.toLowerCase())||rs.find(r=>r.title.toLowerCase()===it.title.toLowerCase())||rs[0];
+      if(!m){dbSet(`watch/${id}/noMatch`,true);continue;}
+      const d=await wApi({watchDetail:{id:m.id,type:m.type}});const f=wFields(d);delete f.title;
+      db.ref(`watch/${id}`).update({...f,platform:it.platform||wPlat(d.providers)});}catch(e){}}
+}
+
 function addLongPress(id){const el=document.getElementById('wi-'+id);if(!el)return;let t;el.addEventListener('touchstart',()=>{t=setTimeout(()=>{if(navigator.vibrate)navigator.vibrate(40);pickStatus(id);},600);},{passive:true});el.addEventListener('touchend',()=>clearTimeout(t),{passive:true});el.addEventListener('touchmove',()=>clearTimeout(t),{passive:true});}
 function pickStatus(id){const it=live.watch[id];if(!it)return;const cur=it.status||'towatch';document.getElementById('spick-opts').innerHTML=[['towatch','📋','To Watch'],['watching','▶️','Watching'],['watched','✅','Watched']].map(([s,ic,lb])=>`<button onclick="setWatchStatus('${id}','${s}')" style="width:100%;text-align:left;padding:14px 16px;border-radius:12px;border:2px solid ${cur===s?'#5B21B6':'#E8EAF0'};background:${cur===s?'#F3EEFF':'#fff'};color:${cur===s?'#5B21B6':'#1A1E5C'};font-size:16px;font-weight:600;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;gap:10px"><span>${ic}</span>${lb}</button>`).join('');document.getElementById('spick').style.display='block';}
 function setWatchStatus(id,status){dbSet(`watch/${id}/status`,status);closeStatus();}
 function closeStatus(){document.getElementById('spick').style.display='none';}
-function editWatch(id){const it=live.watch[id];openSheet('Edit',`<input class="efield" id="ef-t" value="${esc(it.title)}" placeholder="Title"><select class="efield" id="ef-tp"><option value="tv"${it.type==='tv'?' selected':''}>TV show</option><option value="movie"${it.type==='movie'?' selected':''}>Movie</option></select><select class="efield" id="ef-g">${['comedy','drama','thriller','horror','action','documentary','other'].map(g=>`<option value="${g}"${it.genre===g?' selected':''}>${GLBL[g]}</option>`).join('')}</select><select class="efield" id="ef-p"><option value="">No platform</option>${['Netflix','Disney+','Stan','Binge','Paramount+','HBO','Apple TV+','Prime','Cinema','Other'].map(p=>`<option value="${p}"${it.platform===p?' selected':''}>${p}</option>`).join('')}</select><select class="efield" id="ef-s">${['towatch','watching','watched'].map(s=>`<option value="${s}"${(it.status||'towatch')===s?' selected':''}>${WLBL[s]}</option>`).join('')}</select>`,()=>{const t=document.getElementById('ef-t').value.trim();if(!t)return;dbSet(`watch/${id}/title`,t);dbSet(`watch/${id}/type`,document.getElementById('ef-tp').value);dbSet(`watch/${id}/genre`,document.getElementById('ef-g').value);dbSet(`watch/${id}/platform`,document.getElementById('ef-p').value);dbSet(`watch/${id}/status`,document.getElementById('ef-s').value);});}
+function editWatch(id){const it=live.watch[id];const w=it.want||{},rt=it.ratings||{};
+  const info=it.tmdbId?`<div class="wd-top">${it.poster?`<img src="${esc(it.poster.replace('/w185/','/w342/'))}">`:''}<div><div style="font-size:19px;font-weight:700;color:#1A1E5C">${esc(it.title)} <span style="color:#9CA3AF;font-weight:500">${esc(it.year||'')}</span></div>
+  <div class="item-sub">${it.rt?`<span class="pill p-rt">🍅 ${esc(it.rt)}</span>`:''}${it.imdb?`<span class="pill p-imdb">IMDb ${esc(it.imdb)}</span>`:''}</div>
+  <div style="font-size:13px;color:#6B7280;margin-top:6px">${esc((it.genres||[]).join(', '))}${it.runtime?` · ${it.runtime} min`:''}${it.seasons?` · ${it.seasons} season${it.seasons>1?'s':''}`:''}</div>
+  <div style="font-size:13px;color:#6B7280;margin-top:4px">${(it.providers||[]).length?'📺 '+esc(it.providers.join(', ')):'Not streaming in Australia right now'}</div>
+  ${it.trailer?`<a href="${esc(it.trailer)}" target="_blank" style="display:inline-block;margin-top:8px;font-size:14px;font-weight:600;color:#5B21B6">▶ Watch trailer</a>`:''}</div></div>
+  ${it.plot?`<div class="wd-plot">${esc(it.plot)}</div>`:''}`:'';
+  const want=`<div class="wd-row"><span>Who wants to watch</span><span style="display:flex;gap:6px">${['scott','leigh'].map(u=>`<button class="wd-tog" style="${w[u]?`background:${UC[u]};color:#fff;border-color:${UC[u]}`:''}" onclick="dbSet('watch/${id}/want/${u}',${w[u]?'null':'true'});setTimeout(()=>editWatch('${id}'),150)">${UN[u]}</button>`).join('')}</span></div>`;
+  const stars=(it.status==='watched')?['scott','leigh'].map(u=>`<div class="wd-row"><span>${UN[u]}'s rating</span><span class="wd-stars">${[1,2,3,4,5].map(n=>`<button class="${(rt[u]||0)>=n?'on':''}" ${u===me?`onclick="dbSet('watch/${id}/ratings/${me}',${rt[u]===n?'null':n});setTimeout(()=>editWatch('${id}'),150)"`:'style="pointer-events:none"'}>★</button>`).join('')}</span></div>`).join(''):'';
+  openSheet(it.tmdbId?'':'Edit',`<div style="max-height:62vh;overflow-y:auto;-webkit-overflow-scrolling:touch">${info}${want}${stars}<div style="height:10px"></div>
+  <input class="efield" id="ef-t" value="${esc(it.title)}" placeholder="Title"><select class="efield" id="ef-tp"><option value="tv"${it.type==='tv'?' selected':''}>TV show</option><option value="movie"${it.type==='movie'?' selected':''}>Movie</option></select><select class="efield" id="ef-g">${['comedy','drama','thriller','horror','action','documentary','other'].map(g=>`<option value="${g}"${it.genre===g?' selected':''}>${GLBL[g]}</option>`).join('')}</select><select class="efield" id="ef-p"><option value="">No platform</option>${['Netflix','Disney+','Stan','Binge','Paramount+','HBO','Apple TV+','Prime','Cinema','Other'].map(p=>`<option value="${p}"${it.platform===p?' selected':''}>${p}</option>`).join('')}</select><select class="efield" id="ef-s">${['towatch','watching','watched'].map(s=>`<option value="${s}"${(it.status||'towatch')===s?' selected':''}>${WLBL[s]}</option>`).join('')}</select></div>`,()=>{const t=document.getElementById('ef-t').value.trim();if(!t)return;dbSet(`watch/${id}/title`,t);dbSet(`watch/${id}/type`,document.getElementById('ef-tp').value);dbSet(`watch/${id}/genre`,document.getElementById('ef-g').value);dbSet(`watch/${id}/platform`,document.getElementById('ef-p').value);dbSet(`watch/${id}/status`,document.getElementById('ef-s').value);});setTimeout(()=>{if(document.activeElement)document.activeElement.blur();},200);}
 
 function tf(chip,who){todoWhoFilter=who;document.querySelectorAll('#tfilters .fchip').forEach(c=>c.classList.remove('on'));chip.classList.add('on');rTodo();}
 function addTodo(){const el=document.getElementById('ti'),t=el.value.trim();if(!t)return;dbNew('todo',{text:t,priority:document.getElementById('t-pri').value,who:document.getElementById('t-who').value,by:me,at:Date.now()});el.value='';document.getElementById('t-who').value='both';el.focus();}
