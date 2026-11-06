@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="List it">
-<meta name="version" content="2.1">
+<meta name="version" content="2.2">
 <meta name="theme-color" content="#2433B0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -283,7 +283,7 @@ button,input,select,textarea{font-family:inherit}
       <div class="user-chip-dot" id="chip-dot"></div>
       <span class="user-chip-name" id="chip-name"></span>
     </div>
-    <span id="ver-tag">v2.1</span><button class="gear" onclick="openSettings()" aria-label="Settings">⚙︎</button>
+    <span id="ver-tag">v2.2</span><button class="gear" onclick="openSettings()" aria-label="Settings">⚙︎</button>
   </div>
   <div class="tab-bar" id="tab-bar">
     <button class="tab-btn ag" id="tb-grocery" onclick="goSec('grocery',this)"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Grocery</button>
@@ -511,10 +511,21 @@ function wFields(d){return{title:d.title,type:d.type==='tv'?'tv':'movie',genre:w
 function wSearch(q){clearTimeout(wsT);const box=document.getElementById('wsug');q=q.trim();if(q.length<2||!wWorker){box.innerHTML='';return;}
   wsT=setTimeout(async()=>{const n=++wsSeq;try{const j=await wApi({watchSearch:q});if(n!==wsSeq)return;window._wres=j.results||[];
     box.innerHTML=_wres.map((r,k)=>`<div class="wsug-i" onclick="wPick(${k})">${r.poster?`<img src="${esc(r.poster)}">`:'<div class="np"></div>'}<div><div class="wsug-t">${esc(r.title)}</div><div class="wsug-m">${r.type==='tv'?'TV':'Movie'}${r.year?' · '+esc(r.year):''}</div></div></div>`).join('')||'<div class="wsug-m" style="padding:8px 4px">No matches. Tap + to add it as typed.</div>';}catch(e){box.innerHTML='';}},350);}
-async function wPick(k){const r=_wres[k];const box=document.getElementById('wsug');box.innerHTML='<div class="wsug-m" style="padding:8px 4px">Adding…</div>';
-  try{const d=await wApi({watchDetail:{id:r.id,type:r.type}});const f=wFields(d);dbNew('watch',{...f,platform:wPlat(d.providers),status:'towatch',want:{[me]:true},by:me,at:Date.now()});}
-  catch(e){dbNew('watch',{title:r.title,type:r.type==='tv'?'tv':'movie',genre:'other',year:r.year,poster:r.poster,tmdbId:r.id,platform:'',status:'towatch',want:{[me]:true},by:me,at:Date.now()});}
-  box.innerHTML='';document.getElementById('wi').value='';}
+async function wPick(k){const r=_wres[k];const box=document.getElementById('wsug');box.innerHTML='<div class="wsug-m" style="padding:8px 4px">Loading…</div>';
+  let d=null;try{d=await wApi({watchDetail:{id:r.id,type:r.type}});}catch(e){}
+  box.innerHTML='';
+  const f=d?wFields(d):{title:r.title,type:r.type==='tv'?'tv':'movie',genre:'other',year:r.year,poster:r.poster,tmdbId:r.id};
+  const plat=d?wPlat(d.providers):'';
+  const dup=Object.values(live.watch||{}).find(x=>x.tmdbId===f.tmdbId);
+  openSheet('',`<div style="max-height:60vh;overflow-y:auto"><div class="wd-top">${f.poster?`<img src="${esc(f.poster.replace('/w185/','/w342/'))}">`:''}<div><div style="font-size:19px;font-weight:700;color:#1A1E5C">${esc(f.title)} <span style="color:#9CA3AF;font-weight:500">${esc(f.year||'')}</span></div>
+  <div class="item-sub">${f.rt?`<span class="pill p-rt">🍅 ${esc(f.rt)}</span>`:''}${f.imdb?`<span class="pill p-imdb">IMDb ${esc(f.imdb)}</span>`:''}<span class="pill p-tag">${f.type==='tv'?'TV':'Movie'}</span></div>
+  <div style="font-size:13px;color:#6B7280;margin-top:6px">${esc((f.genres||[]).join(', '))}${f.runtime?` · ${f.runtime} min`:''}${f.seasons?` · ${f.seasons} season${f.seasons>1?'s':''}`:''}</div>
+  <div style="font-size:13px;color:#6B7280;margin-top:4px">${(f.providers||[]).length?'📺 '+esc(f.providers.join(', ')):'Not streaming in Australia right now'}</div>
+  ${f.trailer?`<a href="${esc(f.trailer)}" target="_blank" style="display:inline-block;margin-top:8px;font-size:14px;font-weight:600;color:#5B21B6">▶ Watch trailer</a>`:''}</div></div>
+  ${f.plot?`<div class="wd-plot">${esc(f.plot)}</div>`:''}${dup?'<div style="color:#B42318;font-size:14px;font-weight:600;margin-top:6px">Already on your list</div>':''}</div>`,()=>{
+    dbNew('watch',{...f,platform:plat,status:'towatch',want:{[me]:true},by:me,at:Date.now()});document.getElementById('wi').value='';});
+  document.getElementById('sheet-save').textContent=dup?'Add again':'Add to list';
+  setTimeout(()=>{if(document.activeElement)document.activeElement.blur();},150);}
 async function wBackfill(){const b=document.getElementById('wbf');const todo=Object.entries(live.watch||{}).filter(([,it])=>!it.tmdbId&&!it.noMatch);let n=0;
   for(const[id,it]of todo){n++;if(b)b.textContent=`Looking up ${n} of ${todo.length}…`;
     try{const j=await wApi({watchSearch:it.title});const rs=j.results||[];const m=rs.find(r=>(r.type==='tv'?'tv':'movie')===it.type&&r.title.toLowerCase()===it.title.toLowerCase())||rs.find(r=>r.title.toLowerCase()===it.title.toLowerCase())||rs[0];
@@ -578,12 +589,12 @@ function openSheet(title,html,cb){document.getElementById('sheet-title').textCon
 function closeSheet(){document.getElementById('esheet').classList.remove('open');document.getElementById('ebdrop').classList.remove('open');sheetCb=null;}
 
 // ---------- v2.1: settings, hidden tabs, badges ----------
-const VER='2.1',ALLSECS=['grocery','cook','watch','todo','shared'];let hiddenTabs={};
+const VER='2.2',ALLSECS=['grocery','cook','watch','todo','shared'];let hiddenTabs={};
 function applyHidden(){SECS.length=0;ALLSECS.forEach(s=>{const b=document.getElementById('tb-'+s),h=!!hiddenTabs[s];if(b)b.style.display=h?'none':'';if(!h)SECS.push(s);});
   const cur=document.querySelector('.section-view.active');const curName=cur&&cur.id.replace('sv-','');if(curName&&hiddenTabs[curName])goSec('grocery',document.getElementById('tb-grocery'));curSec=Math.max(0,SECS.indexOf(curName));}
 function updBadges(){const set=(s,n)=>{const b=document.getElementById('tb-'+s);if(!b)return;let e=b.querySelector('.tbadge');if(!n){if(e)e.remove();return;}if(!e){e=document.createElement('span');e.className='tbadge';b.appendChild(e);}e.textContent=n>99?'99+':n;};
   set('grocery',Object.values(live.grocery||{}).filter(i=>!i.checked).length);
-  set('watch',Object.values(live.watch||{}).filter(i=>(i.status||'towatch')==='watching').length);}
+  set('watch',0);}
 function openSettings(){const open=localStorage.getItem('listit_open')||'grocery';
   openSheet('Settings',`<div style="max-height:62vh;overflow-y:auto">
   <div class="set-lbl">Who's using this phone</div><div class="set-row"><span>I am</span><span class="seg">${['scott','leigh'].map(u=>`<button class="${me===u?'on':''}" onclick="setMe('${u}')">${UN[u]}</button>`).join('')}</span></div>
@@ -597,6 +608,14 @@ function openSettings(){const open=localStorage.getItem('listit_open')||'grocery
   if(!wWorker){if(el())el().textContent='Not set up';}else wApi({watchSearch:'up'}).then(()=>{if(el())el().textContent='✅ Working';}).catch(e=>{if(el())el().textContent='⚠️ '+e.message;});}
 function setMe(u){me=u;localStorage.setItem('listit_user',u);document.getElementById('chip-dot').style.background=UC[me];document.getElementById('chip-name').textContent=UN[me];openSettings();}
 async function forceUpdate(){try{const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()));const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}catch(e){}location.reload();}
+
+// swipe down to close sheets
+(function(){const sh=document.getElementById('esheet');let y0=null,dy=0,drag=false;
+  const scroller=t=>{for(let e=t;e&&e!==sh;e=e.parentElement){if(e.scrollHeight>e.clientHeight+2&&getComputedStyle(e).overflowY!=='visible')return e;}return null;};
+  sh.addEventListener('touchstart',e=>{const sc=scroller(e.target);if(sc&&sc.scrollTop>0){y0=null;return;}if(e.target.closest('input,textarea,select'))return;y0=e.touches[0].clientY;dy=0;drag=false;},{passive:true});
+  sh.addEventListener('touchmove',e=>{if(y0==null)return;dy=e.touches[0].clientY-y0;if(dy>8){drag=true;sh.style.transition='none';sh.style.transform=`translateY(${dy}px)`;if(e.cancelable)e.preventDefault();}},{passive:false});
+  sh.addEventListener('touchend',()=>{if(y0==null)return;sh.style.transition='';if(drag&&dy>90){closeSheet();}sh.style.transform='';y0=null;drag=false;});
+})();
 </script>
 </body>
 </html>

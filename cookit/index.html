@@ -149,6 +149,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 window.onload=()=>{
+  if(window.self!==window.top){const g=document.querySelector('#home .icon-btn');if(g)g.style.display='none';}
   try{recipes=JSON.parse(localStorage.getItem('cookit_cache')||'{}');}catch(e){}
   renderHome();
   if(!localStorage.getItem('listit_auth'))showCodeGate();
