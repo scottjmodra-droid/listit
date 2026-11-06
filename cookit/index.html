@@ -63,7 +63,14 @@ h2{font-size:22px;margin:28px 0 10px}
 .lnk{color:var(--acc);word-break:break-all;font-size:15px}
 /* sheet */
 .mask{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:20;display:flex;align-items:flex-end}
-.sheet{background:var(--bg);width:100%;max-height:92vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:18px 18px calc(env(safe-area-inset-bottom) + 18px)}
+.sheet{background:var(--bg);width:100%;max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;border-radius:22px 22px 0 0;padding:18px 18px calc(env(safe-area-inset-bottom) + 18px)}
+.mask.full{align-items:stretch}
+.sheet.full{max-height:none;height:100%;border-radius:0;padding-top:0}
+.shead{position:sticky;top:0;z-index:2;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top) + 10px) 0 10px;margin-bottom:4px;border-bottom:1px solid var(--line)}
+.shead b{font-size:18px}
+.shead button{font-size:17px;font-weight:600;padding:8px 4px;color:var(--mute)}
+.shead .sv{color:#fff;background:var(--acc);padding:8px 18px;border-radius:20px}
+textarea.grow{overflow:hidden;resize:none}
 .sheet h3{margin:4px 0 14px;font-size:22px}
 .opt{display:flex;align-items:center;gap:14px;width:100%;padding:16px;background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;font-size:18px;font-weight:600;text-align:left}
 .opt span{font-size:26px}
@@ -188,7 +195,7 @@ function seedOnce(){
     }catch(e){db.ref('cookit/seeded').remove();}
   });
 }
-function save(path,val){return db.ref(path).set(val).catch(e=>toast('Save failed: '+(e.code||e.message)));}
+function save(path,val){return db.ref(path).set(val).catch(e=>{toast('Save failed: '+(e.code||e.message),5000);throw e;});}
 function toast(m,ms=2600){const t=$('toast');t.textContent=m;t.classList.remove('hide');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.add('hide'),ms);}
 
 // ---------- ingredient parsing & scaling ----------
@@ -270,8 +277,9 @@ function gotPhoto(inp){const f=inp.files[0];if(!f)return;compress(f,700,.72).the
 function compress(file,max,qual){return new Promise(res=>{const rd=new FileReader();rd.onload=e=>{const img=new Image();img.onload=()=>{let w=img.width,h=img.height;if(w>max||h>max){if(w>h){h=Math.round(h*max/w);w=max;}else{w=Math.round(w*max/h);h=max;}}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/jpeg',qual));};img.src=e.target.result;};rd.readAsDataURL(file);});}
 
 // ---------- sheets ----------
-function sheet(html){$('sheetwrap').innerHTML=`<div class="mask" onclick="if(event.target===this)closeSheet()"><div class="sheet">${html}</div></div>`;}
-function closeSheet(){$('sheetwrap').innerHTML='';}
+function sheet(html,full){$('sheetwrap').innerHTML=`<div class="mask${full?' full':''}" onclick="if(event.target===this)closeSheet()"><div class="sheet${full?' full':''}">${html}</div></div>`;document.body.style.overflow='hidden';document.querySelectorAll('.screen').forEach(e=>e.style.overflow='hidden');
+  document.querySelectorAll('textarea.grow').forEach(t=>{const g=()=>{t.style.height='auto';t.style.height=(t.scrollHeight+4)+'px';};t.addEventListener('input',g);g();});}
+function closeSheet(){$('sheetwrap').innerHTML='';document.body.style.overflow='';document.querySelectorAll('.screen').forEach(e=>e.style.overflow='');}
 
 function openAdd(){
   const ai=!!config.worker;
@@ -322,28 +330,29 @@ function parseRaw(){
 let draft=null,draftId=null;
 function openEdit(id,pre){
   draftId=id;const r=id?recipes[id]:(pre||{});draft=r;
-  sheet(`<h3>${id?'Edit recipe':'New recipe'}</h3>
+  sheet(`<div class="shead"><button onclick="closeSheet()">Cancel</button><b>${id?'Edit recipe':'New recipe'}</b><button class="sv" onclick="saveEdit()">Save</button></div>
   <label class="f">Name</label><input class="in" id="e-t" value="${esc(r.title||'')}">
   <div style="display:flex;gap:10px"><div style="flex:1"><label class="f">Serves</label><input class="in" id="e-s" type="number" inputmode="numeric" value="${r.servings||4}"></div>
   <div style="flex:1"><label class="f">Cal / serve</label><input class="in" id="e-c" type="number" inputmode="numeric" value="${r.cals||''}"></div></div>
   ${config.worker?`<button class="sec" style="width:100%;margin-top:10px" onclick="estimate()">🔥 Estimate calories</button>`:''}
-  <label class="f">Ingredients</label><textarea class="in" id="e-i" placeholder="400 g spaghetti&#10;2 cloves garlic">${esc((r.ingredients||[]).map(ingLine).join('\n'))}</textarea>
+  <label class="f">Ingredients</label><textarea class="in grow" id="e-i" placeholder="400 g spaghetti&#10;2 cloves garlic">${esc((r.ingredients||[]).map(ingLine).join('\n'))}</textarea>
   <div class="hint">One per line. Put the amount first so it scales.</div>
-  <label class="f">Method</label><textarea class="in" id="e-m" style="min-height:220px" placeholder="One step per line">${esc((r.steps||[]).join('\n'))}</textarea>
+  <label class="f">Method</label><textarea class="in grow" id="e-m" placeholder="One step per line">${esc((r.steps||[]).join('\n'))}</textarea>
   <div class="hint">One step per line. Times like "10 minutes" get a timer button.</div>
   <label class="f">Tags</label><input class="in" id="e-g" value="${esc((r.tags||[]).join(', '))}" placeholder="quick, vegetarian, Leigh's fave">
-  <label class="f">Notes</label><textarea class="in" id="e-n" style="min-height:90px" placeholder="Less chilli next time…">${esc(r.notes||'')}</textarea>
+  <label class="f">Notes</label><textarea class="in grow" id="e-n" placeholder="Less chilli next time…">${esc(r.notes||'')}</textarea>
   <label class="f">Original link</label><input class="in" id="e-l" type="url" value="${esc(r.link||'')}">
   <button class="big" style="margin-top:20px" onclick="saveEdit()">Save</button>
   <button class="sec" style="width:100%;margin-top:10px" onclick="closeSheet()">Cancel</button>
-  ${id?`<button class="danger" onclick="delRecipe()">Delete recipe</button>`:''}`);
+  ${id?`<button class="danger" onclick="delRecipe()">Delete recipe</button>`:''}`,true);
 }
 function readDraft(){return{
   title:$('e-t').value.trim()||'Untitled',servings:Math.max(1,parseInt($('e-s').value)||1),cals:parseInt($('e-c').value)||null,
   ingredients:$('e-i').value.split('\n').map(parseIng).filter(Boolean),steps:$('e-m').value.split('\n').map(s=>s.trim()).filter(Boolean),
   tags:$('e-g').value.split(',').map(s=>s.trim()).filter(Boolean),notes:$('e-n').value.trim(),link:$('e-l').value.trim()};}
-async function saveEdit(){
-  const d=readDraft();
+async function saveEdit(){try{await saveEdit2();}catch(e){if(!e.code)toast("Save failed: "+e.message,5000);}}
+async function saveEdit2(){
+  const d=readDraft();if(!db){toast('Not connected yet — try again in a sec');return;}
   if(draftId){const o=recipes[draftId];await save(`cookit/recipes/${draftId}`,{...o,...d,cals:d.cals,editedBy:me,editedAt:Date.now()});closeSheet();renderRecipe();}
   else{const id='r'+Date.now()+Math.random().toString(36).slice(2,5);await save(`cookit/recipes/${id}`,{...d,by:me,at:Date.now()});closeSheet();recipes[id]={...d};openRecipe(id);}
   toast('Saved');
