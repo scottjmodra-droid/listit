@@ -1,4 +1,4 @@
-const CACHE='listit-v9';
+const CACHE='listit-v10';
 const FB=['https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js','https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js','https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js'];
 
 self.addEventListener('install',e=>{

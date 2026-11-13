@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="List it">
-<meta name="version" content="2.4">
+<meta name="version" content="2.5">
 <meta name="theme-color" content="#2433B0">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
@@ -283,7 +283,7 @@ button,input,select,textarea{font-family:inherit}
       <div class="user-chip-dot" id="chip-dot"></div>
       <span class="user-chip-name" id="chip-name"></span>
     </div>
-    <span id="ver-tag">v2.4</span><button class="gear" onclick="openSettings()" aria-label="Settings">⚙︎</button>
+    <span id="ver-tag">v2.5</span><button class="gear" onclick="openSettings()" aria-label="Settings">⚙︎</button>
   </div>
   <div class="tab-bar" id="tab-bar">
     <button class="tab-btn ag" id="tb-grocery" onclick="goSec('grocery',this)"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>Shop</button>
@@ -601,13 +601,20 @@ function updateOnlineStatus(){document.getElementById('offline-bar').classList.t
 window.addEventListener('online',updateOnlineStatus);
 window.addEventListener('offline',updateOnlineStatus);
 
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+if('serviceWorker' in navigator){
+  // Auto-update: when a new version has downloaded, switch to it straight away.
+  const had=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!had||sessionStorage.getItem('reloaded'))return;sessionStorage.setItem('reloaded','1');sessionStorage.setItem('justUpdated','1');location.reload();});
+  navigator.serviceWorker.register('./sw.js').then(r=>{r.update().catch(()=>{});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update().catch(()=>{});});}).catch(()=>{});
+  if(sessionStorage.getItem('justUpdated')){sessionStorage.removeItem('justUpdated');setTimeout(()=>{sessionStorage.removeItem('reloaded');const t=document.createElement('div');t.textContent='✨ Updated';t.style.cssText='position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 90px);transform:translateX(-50%);background:#1A1E5C;color:#fff;padding:10px 16px;border-radius:12px;font:600 15px -apple-system,sans-serif;z-index:9999';document.body.appendChild(t);setTimeout(()=>t.remove(),2200);},300);}
+  else setTimeout(()=>sessionStorage.removeItem('reloaded'),5000);
+}
 
 function openSheet(title,html,cb){document.getElementById('sheet-title').textContent=title;document.getElementById('sheet-save').textContent='Save';document.getElementById('sheet-body').innerHTML=html;sheetCb=cb;document.getElementById('esheet').classList.add('open');document.getElementById('ebdrop').classList.add('open');document.getElementById('sheet-save').onclick=()=>{if(sheetCb)sheetCb();closeSheet();};setTimeout(()=>{const f=document.querySelector('#sheet-body input,#sheet-body textarea');if(f)f.focus();},120);}
 function closeSheet(){document.getElementById('esheet').classList.remove('open');document.getElementById('ebdrop').classList.remove('open');sheetCb=null;}
 
 // ---------- v2.1: settings, hidden tabs, badges ----------
-const VER='2.4',ALLSECS=['grocery','cook','watch','todo','shared'];let hiddenTabs={};
+const VER='2.5',ALLSECS=['grocery','cook','watch','todo','shared'];let hiddenTabs={};
 function applyHidden(){SECS.length=0;ALLSECS.forEach(s=>{const b=document.getElementById('tb-'+s),h=!!hiddenTabs[s];if(b)b.style.display=h?'none':'';if(!h)SECS.push(s);});
   const cur=document.querySelector('.section-view.active');const curName=cur&&cur.id.replace('sv-','');if(curName&&hiddenTabs[curName])goSec('grocery',document.getElementById('tb-grocery'));curSec=Math.max(0,SECS.indexOf(curName));}
 function updBadges(){const set=(s,n)=>{const b=document.getElementById('tb-'+s);if(!b)return;let e=b.querySelector('.tbadge');if(!n){if(e)e.remove();return;}if(!e){e=document.createElement('span');e.className='tbadge';b.appendChild(e);}e.textContent=n>99?'99+':n;};

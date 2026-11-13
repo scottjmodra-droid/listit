@@ -1,0 +1,4 @@
+# Cloudflare deploys this automatically when it changes on GitHub (Workers Builds).
+name = "cookit-import"
+main = "worker.js"
+compatibility_date = "2026-11-01"

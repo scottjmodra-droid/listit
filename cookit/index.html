@@ -155,7 +155,14 @@ window.onload=()=>{
   if(!localStorage.getItem('listit_auth'))showCodeGate();
   else if(!me)showWhoGate();
   else start();
-  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker' in navigator){
+  // Auto-update: when a new version has downloaded, switch to it straight away.
+  const had=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(!had||sessionStorage.getItem('reloaded'))return;sessionStorage.setItem('reloaded','1');sessionStorage.setItem('justUpdated','1');location.reload();});
+  navigator.serviceWorker.register('sw.js').then(r=>{r.update().catch(()=>{});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update().catch(()=>{});});}).catch(()=>{});
+  if(sessionStorage.getItem('justUpdated')){sessionStorage.removeItem('justUpdated');setTimeout(()=>{sessionStorage.removeItem('reloaded');const t=document.createElement('div');t.textContent='✨ Updated';t.style.cssText='position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 90px);transform:translateX(-50%);background:#1A1E5C;color:#fff;padding:10px 16px;border-radius:12px;font:600 15px -apple-system,sans-serif;z-index:9999';document.body.appendChild(t);setTimeout(()=>t.remove(),2200);},300);}
+  else setTimeout(()=>sessionStorage.removeItem('reloaded'),5000);
+}
 };
 function showCodeGate(){
   const g=$('gate');g.classList.remove('hide');
