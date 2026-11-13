@@ -1,4 +1,4 @@
-// Cook It import helper — paste this whole file into a Cloudflare Worker.
+// Cook It import helper — deployed automatically by Cloudflare from GitHub (cookit-worker/).
 // Secrets (Settings → Variables and Secrets): ANTHROPIC_API_KEY, TMDB_API_KEY, OMDB_API_KEY
 
 const APP_CODE = 'cindy';
